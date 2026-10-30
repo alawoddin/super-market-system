@@ -81,8 +81,9 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->filled('items_json') && ! $request->filled('items')) {
-            $decoded = json_decode($request->input('items_json'), true);
+        $rawJson = $request->input('items_json');
+        if (is_string($rawJson) && $rawJson !== '' && ! $request->filled('items')) {
+            $decoded = json_decode($rawJson, true);
             if (is_array($decoded)) {
                 $decoded = array_map(function (array $item) {
                     foreach (['expiration_date', 'batch_number', 'selling_price'] as $key) {
@@ -99,7 +100,7 @@ class PurchaseController extends Controller
 
         $data = $request->validate([
             'supplier_id' => ['required', 'exists:suppliers,id'],
-            'invoice_number' => ['nullable', 'string', 'unique:purchases,invoice_number'],
+            'invoice_number' => ['nullable', 'string', 'max:50'],
             'purchase_date' => ['required', 'date'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'amount_paid' => ['nullable', 'numeric', 'min:0'],
@@ -121,6 +122,11 @@ class PurchaseController extends Controller
             'items.min' => 'Add at least one product to the purchase list before saving.',
             'supplier_id.required' => 'Please select a supplier.',
         ]);
+
+        $invoice = trim((string) ($data['invoice_number'] ?? ''));
+        if ($invoice === '' || Purchase::withTrashed()->where('invoice_number', $invoice)->exists()) {
+            $data['invoice_number'] = $this->purchases->nextInvoiceNumber();
+        }
 
         try {
             $purchase = $this->purchases->create($data, $data['items']);
