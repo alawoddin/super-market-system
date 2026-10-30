@@ -1,104 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <title>Login — Supermarket Management</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
-        <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
-        <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-    </head>
-
-    <body class="bg-white">
-        <div class="account-page">
-            <div class="container-fluid p-0">
-                <div class="row align-items-center g-0">
-                    <div class="col-xl-5">
-                        <div class="row">
-                            <div class="col-md-7 mx-auto">
-                                <div class="mb-0 border-0 p-md-5 p-lg-0 p-4">
-                                    <div class="mb-4 p-0">
-                                        <a href="{{ route('login') }}" class="auth-logo">
-                                            <img src="{{ asset('backend/assets/images/logo-dark.png') }}" alt="logo" class="mx-auto" height="28" />
-                                        </a>
-                                    </div>
-
-                                    <div class="pt-0">
-                                        <h4 class="mb-1">Admin Login</h4>
-                                        <p class="text-muted mb-4">Supermarket Management System</p>
-
-                                        <form method="POST" action="{{ route('login') }}" class="my-4">
-                                            @csrf
-
-                                            @if(session('error'))
-                                                <div class="alert alert-danger">
-                                                    {{ session('error') }}
-                                                </div>
-                                            @endif
-
-                                            <div class="form-group mb-3">
-                                                <label for="email" class="form-label">Email address</label>
-                                                <input class="form-control" name="email" type="email" id="email" value="{{ old('email') }}" required autofocus placeholder="Enter your email">
-                                                @error('email')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-
-                                            <div class="form-group mb-3">
-                                                <label for="password" class="form-label">Password</label>
-                                                <input class="form-control" name="password" type="password" required id="password" placeholder="Enter your password">
-                                                @error('password')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-
-                                            <div class="form-group d-flex mb-3">
-                                                <div class="col-sm-6">
-                                                    <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                                        <label class="form-check-label" for="remember">Remember me</label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-sm-6 text-end">
-                                                    <a class="text-muted fs-14" href="{{ route('password.request') }}">Forgot password?</a>
-                                                </div>
-                                            </div>
-
-                                            <div class="form-group mb-0 row">
-                                                <div class="col-12">
-                                                    <div class="d-grid">
-                                                        <button class="btn btn-primary" type="submit">Log In</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
+<head>
+    <meta charset="utf-8" />
+    <title>Login — Market OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,550;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('css/market-theme.css') }}" rel="stylesheet" type="text/css" />
+</head>
+<body class="mk-login-body">
+<div class="container-fluid p-0">
+    <div class="row g-0 min-vh-100">
+        <div class="col-xl-5 d-flex align-items-center">
+            <div class="w-100 px-3 px-md-5 py-5">
+                <div class="mk-login-panel mx-auto" style="max-width: 420px">
+                    <div class="d-flex align-items-center gap-2 mb-4">
+                        <span class="mk-brand-mark">M</span>
+                        <div>
+                            <div class="mk-display fw-semibold fs-4 mb-0">Market OS</div>
+                            <small class="text-muted">Supermarket management</small>
                         </div>
                     </div>
 
-                    <div class="col-xl-7">
-                        <div class="account-page-bg p-md-5 p-4">
-                            <div class="text-center">
-                                <h3 class="text-dark mb-3 pera-title">Supermarket Management System</h3>
-                                <p class="text-muted mb-4">Local POS, inventory, and daily operations — AFN</p>
-                                <div class="auth-image">
-                                    <img src="{{ asset('backend/assets/images/authentication.svg') }}" class="mx-auto img-fluid" alt="login">
-                                </div>
-                            </div>
+                    <h4 class="mb-1">Admin login</h4>
+                    <p class="text-muted mb-4">Sign in to your dashboard</p>
+
+                    <form method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input class="form-control form-control-lg" name="email" type="email" id="email" value="{{ old('email') }}" required autofocus placeholder="admin@gmail.com">
+                            @error('email')<small class="text-danger">{{ $message }}</small>@enderror
                         </div>
-                    </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input class="form-control form-control-lg" name="password" type="password" required id="password" placeholder="••••••••">
+                            @error('password')<small class="text-danger">{{ $message }}</small>@enderror
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                            <a class="text-muted small" href="{{ route('password.request') }}">Forgot password?</a>
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100" type="submit" style="border-radius:14px;background:linear-gradient(135deg,#1a7a52,#0f3d2e);border:0">
+                            Enter dashboard
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <script src="{{ asset('backend/assets/libs/jquery/jquery.min.js') }}"></script>
-        <script src="{{ asset('backend/assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('backend/assets/libs/simplebar/simplebar.min.js') }}"></script>
-        <script src="{{ asset('backend/assets/libs/node-waves/waves.min.js') }}"></script>
-        <script src="{{ asset('backend/assets/libs/feather-icons/feather.min.js') }}"></script>
-        <script src="{{ asset('backend/assets/js/app.js') }}"></script>
-    </body>
+        <div class="col-xl-7 mk-login-side">
+            <div style="max-width:520px">
+                <h2>Run your market with clarity</h2>
+                <p class="mb-0" style="opacity:.85;font-size:1.05rem;line-height:1.6">
+                    Track sales, purchases, and profit from the first screen — then sell, restock, and close cash with confidence.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ asset('backend/assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+</body>
 </html>

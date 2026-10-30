@@ -2,18 +2,24 @@
     <div class="h-100" data-simplebar>
         <div id="sidebar-menu">
             <div class="logo-box">
-                <a href="{{ route('pos.index') }}" class="logo logo-light">
-                    <span class="logo-sm"><img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22"></span>
-                    <span class="logo-lg"><img src="{{ asset('backend/assets/images/logo-light.png') }}" alt="" height="24"></span>
-                </a>
-                <a href="{{ route('pos.index') }}" class="logo logo-dark">
-                    <span class="logo-sm"><img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22"></span>
-                    <span class="logo-lg"><img src="{{ asset('backend/assets/images/logo-dark.png') }}" alt="" height="24"></span>
+                <a href="{{ route('dashboard') }}" class="mk-brand">
+                    <span class="mk-brand-mark">M</span>
+                    <span class="mk-brand-text">
+                        <strong>Market OS</strong>
+                        <span>Supermarket desk</span>
+                    </span>
                 </a>
             </div>
 
             <ul id="side-menu">
-                <li class="menu-title">Daily Work</li>
+                <li class="menu-title">Start</li>
+                <li>
+                    <a href="{{ route('dashboard') }}" class="tp-link">
+                        <i data-feather="home"></i><span> Dashboard </span>
+                    </a>
+                </li>
+
+                <li class="menu-title mt-2">Daily Work</li>
                 <li>
                     <a href="{{ route('pos.index') }}" class="tp-link">
                         <i data-feather="shopping-cart"></i><span> Sell (POS) </span>
@@ -76,8 +82,6 @@
                     </a>
                     <div class="collapse" id="sidebarMore">
                         <ul class="nav-second-level">
-                            <li><a href="{{ route('dashboard') }}" class="tp-link">Dashboard</a></li>
-                            <li><a href="{{ route('purchases.index') }}" class="tp-link">Purchase List</a></li>
                             <li><a href="{{ route('inventory.index') }}" class="tp-link">Stock / Expiry</a></li>
                             <li><a href="{{ route('expenses.index') }}" class="tp-link">Expenses</a></li>
                             <li><a href="{{ route('sale-returns.index') }}" class="tp-link">Sale Returns</a></li>

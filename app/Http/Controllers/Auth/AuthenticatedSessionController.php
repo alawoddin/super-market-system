@@ -16,11 +16,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-         $notification = array(
-            'message' => 'Admin Login  Successfully',
-            'alert-type' => 'success'
-         ); 
-        return view('auth.login')->with($notification);
+        return view('auth.login');
     }
 
     /**
@@ -32,13 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $notification = array(
-            'message' => 'Admin Login  Successfully',
-            'alert-type' => 'success'
-         ); 
-
-        // Open POS first — daily selling screen (simple for cashiers)
-        return redirect()->intended(route('pos.index', absolute: false))->with($notification);
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
