@@ -1,74 +1,65 @@
 # Supermarket Management System
 
-Professional local supermarket management app built with Laravel, Blade, Livewire, Alpine.js, Tailwind CSS, and MySQL.
+Local supermarket management app for Afghanistan (AFN), built with Laravel 12, Blade, Livewire, Alpine.js, and MySQL.
 
-**Currency:** Afghan Afghani (AFN)  
-**Auth:** Single admin account (email/password only — no Google / social login)  
-**Mode:** Local / offline daily operations
+## Features
 
-## Environment
+- Single admin login (no Google / social auth)
+- Dashboard with live stats & Chart.js
+- Categories & products (barcode, Excel import/export)
+- Suppliers & customers with debt tracking
+- Purchases with batch inventory (FEFO / expiry)
+- POS with USB barcode scanner support
+- Cash & credit sales, payments, returns
+- Expenses & daily cash register
+- Reports (sales, P&L with real COGS, debts, inventory)
+- Thermal receipt printing (58mm / 80mm)
+- Local database backup / restore
 
-| Tool | Detected version |
-|------|------------------|
-| PHP | 8.2.x |
-| Laravel | 12.x |
-| Composer | 2.x |
-| MySQL | 8.0 |
-| Node.js | 22.x |
+## Requirements
 
-## Local setup
+- PHP 8.2+
+- MySQL 8
+- Composer
+- Node.js (optional, for Vite assets; admin UI uses local Bootstrap theme)
 
-1. Copy environment file and set MySQL credentials:
-
-```bash
-cp .env.example .env
-php artisan key:generate
-```
-
-2. Create MySQL database `inventory` (or update `DB_DATABASE` in `.env`).
-
-3. Install dependencies (if needed):
+## Setup
 
 ```bash
 composer install
-npm install
+copy .env.example .env
+php artisan key:generate
 ```
 
-4. Run migrations and seed the admin user:
+Configure MySQL in `.env` (`DB_DATABASE=inventory` by default), then:
 
 ```bash
-php artisan migrate:fresh --seed
-```
-
-5. Start the app:
-
-```bash
+php artisan migrate --seed
+php artisan storage:link
 php artisan serve
-npm run dev
 ```
 
-Open: http://127.0.0.1:8000
+Open http://127.0.0.1:8000
 
-### Default admin login
+### Admin login
 
-- **Email:** `admin@supermarket.local`
-- **Password:** `password`
+- Email: `admin@supermarket.local`
+- Password: `password`
 
-Change this password after first login.
+Change the password after first login (Profile).
 
-## Development phases
+## Daily workflow
 
-1. **Phase 1 (done):** Foundation, auth cleanup, users table refresh, packages, admin seeder  
-2. **Phase 2:** Categories, products, suppliers, customers, settings  
-3. **Phase 3:** Purchases, batch inventory, stock movements  
-4. **Phase 4:** POS, sales, payments, credit  
-5. **Phase 5:** Expenses, cash register, returns  
-6. **Phase 6:** Dashboard analytics, reports, receipts, backups  
+1. Open **Cash Register** with opening balance
+2. Create **Purchases** to stock products (with expiry dates)
+3. Sell from **POS** (scan barcodes)
+4. Record customer/supplier payments as needed
+5. Close cash register at end of day
+6. Create a **Backup** regularly
 
-## Database backup (local)
+## Notes
 
-```bash
-php artisan db:backup
-```
-
-*(Backup command will be added in a later phase.)*
+- All money values are AFN
+- Credit sales require a registered customer
+- Stock never goes negative; expired batches cannot be sold
+- Profit uses batch purchase costs (COGS), not latest product price only
