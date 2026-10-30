@@ -82,20 +82,27 @@ class PurchaseController extends Controller
     public function store(Request $request)
     {
         $rawJson = $request->input('items_json');
-        if (is_string($rawJson) && $rawJson !== '' && ! $request->filled('items')) {
+        if (is_string($rawJson) && $rawJson !== '' && ! $request->has('items')) {
             $decoded = json_decode($rawJson, true);
             if (is_array($decoded)) {
-                $decoded = array_map(function (array $item) {
-                    foreach (['expiration_date', 'batch_number', 'selling_price'] as $key) {
-                        if (array_key_exists($key, $item) && $item[$key] === '') {
-                            $item[$key] = null;
-                        }
-                    }
-
-                    return $item;
-                }, $decoded);
                 $request->merge(['items' => $decoded]);
             }
+        }
+
+        if ($request->has('items') && is_array($request->input('items'))) {
+            $cleaned = [];
+            foreach ($request->input('items') as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                foreach (['expiration_date', 'batch_number', 'selling_price'] as $key) {
+                    if (array_key_exists($key, $item) && $item[$key] === '') {
+                        $item[$key] = null;
+                    }
+                }
+                $cleaned[] = $item;
+            }
+            $request->merge(['items' => $cleaned]);
         }
 
         $data = $request->validate([

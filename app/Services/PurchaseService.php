@@ -49,10 +49,10 @@ class PurchaseService
             }
 
             $discount = (float) ($data['discount'] ?? 0);
-            $grandTotal = max(0, $subtotal - $discount);
+            $grandTotal = max(0, round($subtotal - $discount, 2));
             $amountPaid = min($grandTotal, (float) ($data['amount_paid'] ?? 0));
-            $remaining = round($grandTotal - $amountPaid, 2);
 
+            // Start unpaid, then recordPayment updates paid/due (avoids double-count bug).
             $purchase = Purchase::query()->create([
                 'invoice_number' => $data['invoice_number'] ?? $this->nextInvoiceNumber(),
                 'supplier_id' => $data['supplier_id'],
@@ -60,10 +60,10 @@ class PurchaseService
                 'purchase_date' => $data['purchase_date'] ?? now()->toDateString(),
                 'subtotal' => round($subtotal, 2),
                 'discount' => $discount,
-                'grand_total' => round($grandTotal, 2),
-                'amount_paid' => $amountPaid,
-                'remaining_balance' => $remaining,
-                'payment_status' => $this->statusFromAmounts($grandTotal, $amountPaid),
+                'grand_total' => $grandTotal,
+                'amount_paid' => 0,
+                'remaining_balance' => $grandTotal,
+                'payment_status' => 'unpaid',
                 'status' => 'confirmed',
                 'notes' => $data['notes'] ?? null,
             ]);

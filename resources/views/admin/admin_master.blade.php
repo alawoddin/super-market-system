@@ -9,8 +9,9 @@
     <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
     <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css">
-    <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {{-- Use only one Alpine: local build (POS). Livewire is configured not to inject a second copy. --}}
+    <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     @stack('styles')
     @livewireStyles
 </head>
@@ -43,7 +44,7 @@
     }
 @endif
 </script>
-@stack('scripts')
 @livewireScripts
+@stack('scripts')
 </body>
 </html>

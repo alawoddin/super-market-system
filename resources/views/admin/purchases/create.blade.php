@@ -1,41 +1,18 @@
 @extends('admin.admin_master')
 @section('title','New Purchase')
 @section('admin')
-@php
-    $oldLines = [];
-    if (old('items_json')) {
-        $decoded = json_decode(old('items_json'), true);
-        if (is_array($decoded)) {
-            foreach ($decoded as $row) {
-                $product = \App\Models\Product::find($row['product_id'] ?? null);
-                $oldLines[] = [
-                    '_key' => uniqid('line_', true),
-                    'id' => (int) ($row['product_id'] ?? 0),
-                    'name' => $product?->name ?? ('Product #'.($row['product_id'] ?? '')),
-                    'cartons' => (float) ($row['cartons'] ?? 0),
-                    'perCarton' => (float) ($row['units_per_carton'] ?? 0),
-                    'cartonPrice' => (float) ($row['carton_price'] ?? 0),
-                    'qty' => (float) ($row['quantity'] ?? 0),
-                    'cost' => (float) ($row['unit_cost'] ?? 0),
-                    'sellPrice' => (float) ($row['selling_price'] ?? 0),
-                    'expiry' => $row['expiration_date'] ?? '',
-                ];
-            }
-        }
-    }
-@endphp
-<div class="content" x-data="purchaseForm(@js($oldLines))">
+<div class="content">
 <div class="container-fluid">
 <div class="py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
         <h4 class="m-0">Buy Stock from Supplier</h4>
-        <small class="text-muted">Follow steps 1 → 2 → 3 → 4. Item must appear in the table before Save.</small>
+        <small class="text-muted">Select product → enter cartons → Add to list → Save</small>
     </div>
     <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary btn-sm">Purchase List</a>
 </div>
 
 @if ($errors->any())
-<div class="alert alert-danger sticky-top" style="z-index:1030">
+<div class="alert alert-danger">
     <strong>Purchase was not saved:</strong>
     <ul class="mb-0 mt-1">
         @foreach ($errors->all() as $error)
@@ -45,27 +22,24 @@
 </div>
 @endif
 
-<div class="alert alert-info py-2">
-    <strong>How cost is calculated:</strong>
-    Carton price ÷ cans per carton = cost per can.
-    Example: 1000 AFN ÷ 30 cans = <strong>33.33 AFN</strong> cost.
-    Sell price should be higher than cost (your product currently has sell = 30 — raise it, e.g. 50).
+<div class="alert alert-info py-2 mb-3">
+    <strong>Example:</strong> 10 cartons × 30 cans · carton price 1000 AFN
+    → stock = <strong>300</strong> · cost/can = <strong>33.33 AFN</strong>
+    · sell should be higher (e.g. 50 AFN)
 </div>
 
-<form method="POST" action="{{ route('purchases.store') }}" @submit="prepare">
+<form method="POST" action="{{ route('purchases.store') }}" id="purchase-form">
     @csrf
-    <input type="hidden" name="items_json" :value="itemsJson">
 
 <div class="card mb-3"><div class="card-body row g-3">
     <div class="col-md-4">
-        <label class="form-label">Supplier</label>
-        <select name="supplier_id" class="form-select @error('supplier_id') is-invalid @enderror" required>
+        <label class="form-label">Supplier <span class="text-danger">*</span></label>
+        <select name="supplier_id" class="form-select" required>
             <option value="">Select supplier</option>
             @foreach($suppliers as $s)
                 <option value="{{ $s->id }}" @selected(old('supplier_id') == $s->id)>{{ $s->name }}</option>
             @endforeach
         </select>
-        @error('supplier_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
     </div>
     <div class="col-md-4">
         <label class="form-label">Invoice #</label>
@@ -78,89 +52,83 @@
 </div></div>
 
 <div class="card mb-3 border-primary"><div class="card-body">
-    <h5 class="mb-3">Step 1 — Find product</h5>
-    <div class="input-group input-group-lg mb-3">
-        <input type="text" class="form-control" placeholder="Type product name (Hit) or scan barcode, then Enter"
-               x-ref="scan" x-model="scanCode" @keydown.enter.prevent="scanProduct()" autofocus>
-        <button type="button" class="btn btn-primary" @click="scanProduct()">Find</button>
-    </div>
-    <div class="text-danger mb-2" x-text="error" x-show="error"></div>
-
-    <div class="border rounded p-3 bg-light" x-show="draft.id" x-cloak>
-        <h6 class="mb-2">Step 2 — Enter carton details for <span x-text="draft.name"></span></h6>
-        <div class="row g-2">
-            <div class="col-md-3">
-                <label class="form-label">Cartons bought</label>
-                <input type="number" min="0.001" step="1" class="form-control" x-model.number="draft.cartons" @input="recalcDraft()">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Cans per carton</label>
-                <input type="number" min="1" step="1" class="form-control" x-model.number="draft.perCarton" @input="recalcDraft()">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Price per carton (AFN)</label>
-                <input type="number" min="0" step="0.01" class="form-control" x-model.number="draft.cartonPrice" @input="recalcDraft()">
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Sell price per can (AFN)</label>
-                <input type="number" min="0" step="0.01" class="form-control" x-model.number="draft.sellPrice">
-                <small class="text-danger" x-show="draft.sellPrice > 0 && draft.sellPrice < draft.unitCost">
-                    Sell price is below cost — you will lose money.
-                </small>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Expiry (optional)</label>
-                <input type="date" class="form-control" x-model="draft.expiry">
-            </div>
-            <div class="col-md-9 d-flex align-items-end">
-                <div class="me-auto">
-                    <div>Total stock: <strong x-text="draft.totalQty + ' cans'"></strong></div>
-                    <div>Cost per can: <strong class="text-primary" x-text="draft.unitCost.toFixed(2) + ' AFN'"></strong></div>
-                    <div>Line total: <strong x-text="(draft.cartons * draft.cartonPrice).toFixed(2) + ' AFN'"></strong></div>
-                </div>
-                <button type="button" class="btn btn-success btn-lg" @click="addDraft()">Step 3 — Add to purchase list</button>
+    <h5 class="mb-3">Add product</h5>
+    <div class="row g-2 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label">Product</label>
+            <select id="product_id" class="form-select">
+                <option value="">Select product</option>
+                @foreach($products as $p)
+                    <option value="{{ $p->id }}"
+                        data-name="{{ $p->name }}"
+                        data-sell="{{ $p->selling_price }}">
+                        {{ $p->name }} @if($p->barcode) ({{ $p->barcode }}) @endif
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Or type name / barcode</label>
+            <div class="input-group">
+                <input type="text" id="scan_code" class="form-control" placeholder="Hit / barcode">
+                <button type="button" class="btn btn-primary" id="btn-find">Find</button>
             </div>
         </div>
-        <small class="text-muted d-block mt-2">Loose cans (no carton): set cartons = total cans, cans per carton = 1.</small>
     </div>
+
+    <div class="row g-2 mt-3">
+        <div class="col-md-2">
+            <label class="form-label">Cartons</label>
+            <input type="number" id="cartons" class="form-control" value="10" min="1" step="1">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Cans / carton</label>
+            <input type="number" id="per_carton" class="form-control" value="30" min="1" step="1">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Price / carton</label>
+            <input type="number" id="carton_price" class="form-control" value="1000" min="0" step="0.01">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Sell / can</label>
+            <input type="number" id="sell_price" class="form-control" value="50" min="0" step="0.01">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Expiry</label>
+            <input type="date" id="expiry" class="form-control">
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-success w-100" id="btn-add">Add to list</button>
+        </div>
+    </div>
+    <div class="mt-2 text-muted" id="calc-preview">Total qty: 300 · Cost/can: 33.33 AFN</div>
+    <div class="text-danger mt-1" id="form-error"></div>
 </div></div>
 
 <div class="card mb-3"><div class="card-body">
-    <h5>Purchase list <span class="badge bg-primary" x-text="lines.length" x-show="lines.length"></span></h5>
-    <div class="alert alert-warning py-2" x-show="!lines.length">
-        Empty list = nothing to save. Complete Step 3 first.
-    </div>
+    <h5>Purchase list</h5>
     <div class="table-responsive">
-        <table class="table align-middle">
+        <table class="table align-middle" id="lines-table">
             <thead>
                 <tr>
                     <th>Product</th>
                     <th>Pack</th>
-                    <th>Total qty</th>
+                    <th>Qty</th>
                     <th>Cost/unit</th>
-                    <th>Sell price</th>
+                    <th>Sell</th>
                     <th>Line total</th>
                     <th></th>
                 </tr>
             </thead>
-            <tbody>
-            <template x-for="(line, i) in lines" :key="line._key">
-                <tr>
-                    <td><div class="fw-semibold" x-text="line.name"></div></td>
-                    <td x-text="line.cartons + ' carton × ' + line.perCarton"></td>
-                    <td x-text="line.qty"></td>
-                    <td x-text="Number(line.cost).toFixed(2) + ' AFN'"></td>
-                    <td x-text="Number(line.sellPrice).toFixed(2) + ' AFN'"></td>
-                    <td x-text="(line.cartons * line.cartonPrice).toFixed(2) + ' AFN'"></td>
-                    <td><button type="button" class="btn btn-sm btn-outline-danger" @click="lines.splice(i,1)">Remove</button></td>
-                </tr>
-            </template>
+            <tbody id="lines-body">
+                <tr id="empty-row"><td colspan="7" class="text-center text-muted">No items yet</td></tr>
             </tbody>
         </table>
     </div>
-    <div class="text-end fs-5" x-show="lines.length">
-        Purchase total: <strong x-text="purchaseTotal.toFixed(2) + ' AFN'"></strong>
+    <div class="text-end fs-5 d-none" id="total-wrap">
+        Purchase total: <strong id="purchase-total">0.00 AFN</strong>
     </div>
+    <div id="items-inputs"></div>
 </div></div>
 
 <div class="card"><div class="card-body row g-3">
@@ -171,7 +139,6 @@
     <div class="col-md-3">
         <label class="form-label">Cash paid now (AFN)</label>
         <input type="number" step="0.01" name="amount_paid" class="form-control" value="{{ old('amount_paid', 0) }}">
-        <small class="text-muted">0 = buy on credit (supplier debt)</small>
     </div>
     <input type="hidden" name="payment_method" value="cash">
     <div class="col-md-3">
@@ -183,33 +150,92 @@
         <input name="notes" class="form-control" value="{{ old('notes') }}">
     </div>
     <div class="col-12">
-        <button type="submit" class="btn btn-primary btn-lg" :disabled="!lines.length">
-            Step 4 — Save Purchase & Add Stock
-        </button>
-        <span class="text-muted ms-2" x-show="!lines.length">Add items to the list first</span>
+        <button type="submit" class="btn btn-primary btn-lg" id="btn-save">Save Purchase & Add Stock</button>
     </div>
 </div></div>
 </form>
 </div></div>
 @endsection
 
-@push('styles')
-<style>[x-cloak]{display:none!important}</style>
-@endpush
-
 @push('scripts')
 <script>
-function purchaseForm(initialLines = []) {
-    return {
-        scanCode: '',
-        error: '',
-        lines: Array.isArray(initialLines) ? initialLines : [],
-        draft: { id: null, name: '', cartons: 10, perCarton: 30, cartonPrice: 1000, sellPrice: 50, unitCost: 0, totalQty: 0, expiry: '' },
-        get purchaseTotal() {
-            return this.lines.reduce((s, l) => s + (Number(l.cartons) * Number(l.cartonPrice)), 0);
-        },
-        get itemsJson() {
-            return JSON.stringify(this.lines.map(line => ({
+(function () {
+    const lines = [];
+    const body = document.getElementById('lines-body');
+    const emptyRow = document.getElementById('empty-row');
+    const inputs = document.getElementById('items-inputs');
+    const err = document.getElementById('form-error');
+    const productSelect = document.getElementById('product_id');
+    const totalWrap = document.getElementById('total-wrap');
+    const purchaseTotal = document.getElementById('purchase-total');
+
+    function money(n) { return Number(n).toFixed(2) + ' AFN'; }
+
+    function recalcPreview() {
+        const cartons = Number(document.getElementById('cartons').value) || 0;
+        const per = Number(document.getElementById('per_carton').value) || 0;
+        const price = Number(document.getElementById('carton_price').value) || 0;
+        const qty = cartons * per;
+        const cost = per > 0 ? (price / per) : 0;
+        document.getElementById('calc-preview').textContent =
+            'Total qty: ' + qty + ' · Cost/can: ' + cost.toFixed(2) + ' AFN · Line: ' + (cartons * price).toFixed(2) + ' AFN';
+    }
+
+    ['cartons', 'per_carton', 'carton_price'].forEach(id => {
+        document.getElementById(id).addEventListener('input', recalcPreview);
+    });
+    recalcPreview();
+
+    productSelect.addEventListener('change', function () {
+        const opt = productSelect.options[productSelect.selectedIndex];
+        if (opt && opt.value) {
+            document.getElementById('sell_price').value = opt.dataset.sell || 50;
+        }
+    });
+
+    document.getElementById('btn-find').addEventListener('click', findProduct);
+    document.getElementById('scan_code').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); findProduct(); }
+    });
+
+    async function findProduct() {
+        err.textContent = '';
+        const code = document.getElementById('scan_code').value.trim();
+        if (!code) { err.textContent = 'Type a product name or barcode'; return; }
+        try {
+            const res = await fetch(@json(route('purchases.lookup')) + '?barcode=' + encodeURIComponent(code));
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Not found');
+            productSelect.value = String(data.id);
+            document.getElementById('sell_price').value = data.selling_price || 50;
+            document.getElementById('scan_code').value = '';
+        } catch (e) {
+            err.textContent = e.message;
+        }
+    }
+
+    function render() {
+        body.querySelectorAll('tr.line-row').forEach(r => r.remove());
+        inputs.innerHTML = '';
+        emptyRow.style.display = lines.length ? 'none' : '';
+        totalWrap.classList.toggle('d-none', !lines.length);
+
+        let total = 0;
+        lines.forEach((line, i) => {
+            total += line.cartons * line.cartonPrice;
+            const tr = document.createElement('tr');
+            tr.className = 'line-row';
+            tr.innerHTML =
+                '<td>' + line.name + '</td>' +
+                '<td>' + line.cartons + ' carton × ' + line.perCarton + '</td>' +
+                '<td>' + line.qty + '</td>' +
+                '<td>' + money(line.cost) + '</td>' +
+                '<td>' + money(line.sellPrice) + '</td>' +
+                '<td>' + money(line.cartons * line.cartonPrice) + '</td>' +
+                '<td><button type="button" class="btn btn-sm btn-outline-danger" data-i="' + i + '">Remove</button></td>';
+            body.appendChild(tr);
+
+            const fields = {
                 product_id: line.id,
                 quantity: line.qty,
                 unit_cost: line.cost,
@@ -218,65 +244,62 @@ function purchaseForm(initialLines = []) {
                 units_per_carton: line.perCarton,
                 carton_price: line.cartonPrice,
                 discount: 0,
-                expiration_date: line.expiry || null,
-            })));
-        },
-        recalcDraft() {
-            const cartons = Number(this.draft.cartons) || 0;
-            const per = Number(this.draft.perCarton) || 0;
-            const price = Number(this.draft.cartonPrice) || 0;
-            this.draft.totalQty = cartons * per;
-            this.draft.unitCost = per > 0 ? (price / per) : 0;
-        },
-        async scanProduct() {
-            this.error = '';
-            const code = this.scanCode.trim();
-            if (!code) return;
-            try {
-                const res = await fetch(`{{ route('purchases.lookup') }}?barcode=${encodeURIComponent(code)}`);
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Not found');
-                this.draft.id = data.id;
-                this.draft.name = data.name;
-                this.draft.sellPrice = Number(data.selling_price) || 50;
-                this.recalcDraft();
-                this.scanCode = '';
-            } catch (e) {
-                this.error = e.message;
-                this.draft.id = null;
-            }
-        },
-        addDraft() {
-            this.recalcDraft();
-            if (!this.draft.id) { this.error = 'Find a product first (Step 1)'; return; }
-            if (this.draft.cartons <= 0 || this.draft.perCarton <= 0 || this.draft.cartonPrice < 0) {
-                this.error = 'Enter cartons, cans per carton, and carton price';
-                return;
-            }
-            this.lines.push({
-                _key: Date.now() + '-' + Math.random(),
-                id: this.draft.id,
-                name: this.draft.name,
-                cartons: Number(this.draft.cartons),
-                perCarton: Number(this.draft.perCarton),
-                cartonPrice: Number(this.draft.cartonPrice),
-                qty: Number(this.draft.totalQty),
-                cost: Number(this.draft.unitCost.toFixed(4)),
-                sellPrice: Number(this.draft.sellPrice) || 0,
-                expiry: this.draft.expiry || '',
+                expiration_date: line.expiry || ''
+            };
+            Object.keys(fields).forEach(key => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'items[' + i + '][' + key + ']';
+                input.value = fields[key];
+                inputs.appendChild(input);
             });
-            this.draft = { id: null, name: '', cartons: 10, perCarton: 30, cartonPrice: 1000, sellPrice: 50, unitCost: 0, totalQty: 0, expiry: '' };
-            this.error = '';
-            this.$refs.scan?.focus();
-        },
-        prepare(e) {
-            if (!this.lines.length) {
-                e.preventDefault();
-                this.error = 'Add at least one product to the purchase list (Step 3)';
-                alert(this.error);
-            }
-        }
+        });
+
+        purchaseTotal.textContent = money(total);
+        body.querySelectorAll('button[data-i]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                lines.splice(Number(btn.dataset.i), 1);
+                render();
+            });
+        });
     }
-}
+
+    document.getElementById('btn-add').addEventListener('click', function () {
+        err.textContent = '';
+        const opt = productSelect.options[productSelect.selectedIndex];
+        if (!opt || !opt.value) {
+            err.textContent = 'Select a product first';
+            return;
+        }
+        const cartons = Number(document.getElementById('cartons').value) || 0;
+        const perCarton = Number(document.getElementById('per_carton').value) || 0;
+        const cartonPrice = Number(document.getElementById('carton_price').value) || 0;
+        const sellPrice = Number(document.getElementById('sell_price').value) || 0;
+        if (cartons <= 0 || perCarton <= 0) {
+            err.textContent = 'Enter cartons and cans per carton';
+            return;
+        }
+        lines.push({
+            id: Number(opt.value),
+            name: opt.dataset.name || opt.textContent.trim(),
+            cartons: cartons,
+            perCarton: perCarton,
+            cartonPrice: cartonPrice,
+            qty: cartons * perCarton,
+            cost: Number((cartonPrice / perCarton).toFixed(4)),
+            sellPrice: sellPrice,
+            expiry: document.getElementById('expiry').value || ''
+        });
+        render();
+    });
+
+    document.getElementById('purchase-form').addEventListener('submit', function (e) {
+        if (!lines.length) {
+            e.preventDefault();
+            err.textContent = 'Add at least one product to the purchase list before saving';
+            alert(err.textContent);
+        }
+    });
+})();
 </script>
 @endpush
