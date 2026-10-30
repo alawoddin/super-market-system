@@ -37,7 +37,8 @@ class AuthenticatedSessionController extends Controller
             'alert-type' => 'success'
          ); 
 
-        return redirect()->intended(route('dashboard', absolute: false))->with($notification);
+        // Open POS first — daily selling screen (simple for cashiers)
+        return redirect()->intended(route('pos.index', absolute: false))->with($notification);
     }
 
     /**

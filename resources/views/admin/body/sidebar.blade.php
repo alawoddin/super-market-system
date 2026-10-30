@@ -2,98 +2,87 @@
     <div class="h-100" data-simplebar>
         <div id="sidebar-menu">
             <div class="logo-box">
-                <a href="{{ route('dashboard') }}" class="logo logo-light">
+                <a href="{{ route('pos.index') }}" class="logo logo-light">
                     <span class="logo-sm"><img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22"></span>
                     <span class="logo-lg"><img src="{{ asset('backend/assets/images/logo-light.png') }}" alt="" height="24"></span>
                 </a>
-                <a href="{{ route('dashboard') }}" class="logo logo-dark">
+                <a href="{{ route('pos.index') }}" class="logo logo-dark">
                     <span class="logo-sm"><img src="{{ asset('backend/assets/images/logo-sm.png') }}" alt="" height="22"></span>
                     <span class="logo-lg"><img src="{{ asset('backend/assets/images/logo-dark.png') }}" alt="" height="24"></span>
                 </a>
             </div>
 
             <ul id="side-menu">
-                <li class="menu-title">Main</li>
+                <li class="menu-title">Daily Work</li>
                 <li>
-                    <a href="{{ route('dashboard') }}" class="tp-link"><i data-feather="home"></i><span> Dashboard </span></a>
+                    <a href="{{ route('pos.index') }}" class="tp-link">
+                        <i data-feather="shopping-cart"></i><span> Sell (POS) </span>
+                    </a>
                 </li>
                 <li>
-                    <a href="{{ route('pos.index') }}" class="tp-link"><i data-feather="shopping-cart"></i><span> POS </span></a>
+                    <a href="{{ route('cash-register.index') }}" class="tp-link">
+                        <i data-feather="briefcase"></i><span> Cash Register </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('sales.index') }}" class="tp-link">
+                        <i data-feather="list"></i><span> Today Sales </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('customer-payments.create') }}" class="tp-link">
+                        <i data-feather="dollar-sign"></i><span> Take Debt Payment </span>
+                    </a>
                 </li>
 
-                <li class="menu-title mt-2">Catalog</li>
+                <li class="menu-title mt-2">Add Stock</li>
                 <li>
-                    <a href="{{ route('categories.index') }}" class="tp-link"><i data-feather="grid"></i><span> Categories </span></a>
+                    <a href="{{ route('purchases.create') }}" class="tp-link">
+                        <i data-feather="plus-circle"></i><span> New Purchase </span>
+                    </a>
                 </li>
                 <li>
-                    <a href="{{ route('products.index') }}" class="tp-link"><i data-feather="package"></i><span> Products </span></a>
+                    <a href="{{ route('products.index') }}" class="tp-link">
+                        <i data-feather="package"></i><span> Products </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('categories.index') }}" class="tp-link">
+                        <i data-feather="grid"></i><span> Categories </span>
+                    </a>
                 </li>
 
                 <li class="menu-title mt-2">People</li>
                 <li>
-                    <a href="{{ route('customers.index') }}" class="tp-link"><i data-feather="users"></i><span> Customers </span></a>
+                    <a href="{{ route('customers.index') }}" class="tp-link">
+                        <i data-feather="users"></i><span> Customers </span>
+                    </a>
                 </li>
                 <li>
-                    <a href="{{ route('suppliers.index') }}" class="tp-link"><i data-feather="truck"></i><span> Suppliers </span></a>
+                    <a href="{{ route('suppliers.index') }}" class="tp-link">
+                        <i data-feather="truck"></i><span> Suppliers </span>
+                    </a>
                 </li>
 
-                <li class="menu-title mt-2">Operations</li>
+                <li class="menu-title mt-2">More</li>
                 <li>
-                    <a href="#sidebarPurchases" data-bs-toggle="collapse">
-                        <i data-feather="download"></i><span> Purchases </span><span class="menu-arrow"></span>
+                    <a href="#sidebarMore" data-bs-toggle="collapse">
+                        <i data-feather="more-horizontal"></i><span> More Tools </span><span class="menu-arrow"></span>
                     </a>
-                    <div class="collapse" id="sidebarPurchases">
+                    <div class="collapse" id="sidebarMore">
                         <ul class="nav-second-level">
+                            <li><a href="{{ route('dashboard') }}" class="tp-link">Dashboard</a></li>
                             <li><a href="{{ route('purchases.index') }}" class="tp-link">Purchase List</a></li>
-                            <li><a href="{{ route('purchases.create') }}" class="tp-link">New Purchase</a></li>
+                            <li><a href="{{ route('inventory.index') }}" class="tp-link">Stock / Expiry</a></li>
+                            <li><a href="{{ route('expenses.index') }}" class="tp-link">Expenses</a></li>
+                            <li><a href="{{ route('sale-returns.index') }}" class="tp-link">Sale Returns</a></li>
                             <li><a href="{{ route('purchase-returns.index') }}" class="tp-link">Purchase Returns</a></li>
-                            <li><a href="{{ route('supplier-payments.index') }}" class="tp-link">Supplier Payments</a></li>
+                            <li><a href="{{ route('reports.index') }}" class="tp-link">Reports</a></li>
+                            <li><a href="{{ route('settings.edit') }}" class="tp-link">Settings</a></li>
+                            <li><a href="{{ route('backups.index') }}" class="tp-link">Backups</a></li>
+                            <li><a href="{{ route('admin.profile') }}" class="tp-link">Profile</a></li>
                         </ul>
                     </div>
-                </li>
-                <li>
-                    <a href="#sidebarSales" data-bs-toggle="collapse">
-                        <i data-feather="dollar-sign"></i><span> Sales </span><span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="sidebarSales">
-                        <ul class="nav-second-level">
-                            <li><a href="{{ route('sales.index') }}" class="tp-link">Sales History</a></li>
-                            <li><a href="{{ route('sale-returns.index') }}" class="tp-link">Sales Returns</a></li>
-                            <li><a href="{{ route('customer-payments.index') }}" class="tp-link">Customer Payments</a></li>
-                        </ul>
-                    </div>
-                </li>
-                <li>
-                    <a href="#sidebarInventory" data-bs-toggle="collapse">
-                        <i data-feather="archive"></i><span> Inventory </span><span class="menu-arrow"></span>
-                    </a>
-                    <div class="collapse" id="sidebarInventory">
-                        <ul class="nav-second-level">
-                            <li><a href="{{ route('inventory.index') }}" class="tp-link">Stock</a></li>
-                            <li><a href="{{ route('inventory.batches') }}" class="tp-link">Batches / Expiry</a></li>
-                            <li><a href="{{ route('inventory.movements') }}" class="tp-link">Movements</a></li>
-                        </ul>
-                    </div>
-                </li>
-                <li>
-                    <a href="{{ route('expenses.index') }}" class="tp-link"><i data-feather="file-text"></i><span> Expenses </span></a>
-                </li>
-                <li>
-                    <a href="{{ route('cash-register.index') }}" class="tp-link"><i data-feather="briefcase"></i><span> Cash Register </span></a>
-                </li>
-
-                <li class="menu-title mt-2">Reports & System</li>
-                <li>
-                    <a href="{{ route('reports.index') }}" class="tp-link"><i data-feather="bar-chart-2"></i><span> Reports </span></a>
-                </li>
-                <li>
-                    <a href="{{ route('settings.edit') }}" class="tp-link"><i data-feather="settings"></i><span> Settings </span></a>
-                </li>
-                <li>
-                    <a href="{{ route('backups.index') }}" class="tp-link"><i data-feather="database"></i><span> Backups </span></a>
-                </li>
-                <li>
-                    <a href="{{ route('admin.profile') }}" class="tp-link"><i data-feather="user"></i><span> Profile </span></a>
                 </li>
             </ul>
         </div>

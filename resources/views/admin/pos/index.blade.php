@@ -1,62 +1,91 @@
 @extends('admin.admin_master')
-@section('title', 'POS')
+@section('title', 'Sell - POS')
 @section('admin')
 <div class="content" x-data="posApp()" x-init="init()">
 <div class="container-fluid">
-<div class="py-3 d-flex justify-content-between align-items-center">
-    <h4 class="m-0">Point of Sale</h4>
-    <div class="text-muted">Currency: AFN · Scan barcode or search</div>
+
+<div class="py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h4 class="m-0">Sell Products (POS)</h4>
+        <small class="text-muted">Simple cash selling · AFN</small>
+    </div>
+    <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Dashboard</a>
+</div>
+
+<div class="alert alert-primary py-2 mb-3">
+    <strong>How to scan:</strong>
+    Plug USB barcode scanner → click the big box below → scan product.
+    Scanner types the barcode and presses Enter automatically. Product is added to cart.
 </div>
 
 <div class="row g-3">
     <div class="col-xl-7">
-        <div class="card">
+        <div class="card border-primary">
             <div class="card-body">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control form-control-lg" placeholder="Scan barcode / search product"
-                           x-ref="barcode" x-model="query" @keydown.enter.prevent="scan()" autofocus>
-                    <button class="btn btn-primary" @click="scan()">Add</button>
+                <label class="form-label fw-semibold">1) Scan barcode here</label>
+                <div class="input-group input-group-lg mb-2">
+                    <input type="text"
+                           class="form-control form-control-lg border-primary"
+                           style="font-size:1.4rem;"
+                           placeholder="Ready to scan... or type barcode and press Enter"
+                           x-ref="barcode"
+                           x-model="query"
+                           @keydown.enter.prevent="scan()"
+                           autofocus>
+                    <button class="btn btn-primary btn-lg px-4" @click="scan()">Add</button>
                 </div>
-                <div class="mb-3">
-                    <input type="text" class="form-control" placeholder="Live search..." x-model="searchTerm" @input.debounce.300ms="liveSearch()">
-                    <div class="list-group mt-2" x-show="results.length">
-                        <template x-for="p in results" :key="p.id">
-                            <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between"
-                                    @click="addProduct(p)">
-                                <span x-text="p.name + ' (' + p.barcode + ')'"></span>
-                                <span x-text="p.selling_price + ' AFN · stock ' + p.stock"></span>
-                            </button>
-                        </template>
-                    </div>
+                <div class="text-danger mb-2" x-text="error" x-show="error"></div>
+                <div class="text-success mb-2" x-text="okMsg" x-show="okMsg"></div>
+
+                <label class="form-label fw-semibold mt-2">Or search by name</label>
+                <input type="text" class="form-control form-control-lg" placeholder="Type product name..."
+                       x-model="searchTerm" @input.debounce.300ms="liveSearch()">
+                <div class="list-group mt-2" x-show="results.length">
+                    <template x-for="p in results" :key="p.id">
+                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between"
+                                @click="addProduct(p)">
+                            <span x-text="p.name"></span>
+                            <span class="text-muted" x-text="Number(p.selling_price).toFixed(2) + ' AFN'"></span>
+                        </button>
+                    </template>
                 </div>
-                <div class="table-responsive" style="max-height:420px;overflow:auto;">
-                    <table class="table align-middle">
-                        <thead><tr><th>Product</th><th width="110">Qty</th><th>Price</th><th>Disc</th><th>Total</th><th></th></tr></thead>
+
+                <hr>
+                <h5 class="mb-2">2) Cart</h5>
+                <div class="table-responsive" style="max-height:380px;overflow:auto;">
+                    <table class="table table-lg align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th width="130">Qty</th>
+                                <th width="110">Total</th>
+                                <th width="50"></th>
+                            </tr>
+                        </thead>
                         <tbody>
                         <template x-for="(item, index) in cart" :key="item.product_id">
                             <tr>
                                 <td>
-                                    <div x-text="item.name"></div>
-                                    <small class="text-muted" x-text="item.barcode"></small>
+                                    <div class="fw-semibold" x-text="item.name"></div>
+                                    <small class="text-muted" x-text="Number(item.unit_price).toFixed(2) + ' AFN each'"></small>
                                 </td>
                                 <td>
-                                    <div class="input-group input-group-sm">
-                                        <button class="btn btn-outline-secondary" @click="changeQty(index,-1)">-</button>
-                                        <input type="number" class="form-control text-center" x-model.number="item.quantity" @change="recalc()" min="0.001" step="0.001">
-                                        <button class="btn btn-outline-secondary" @click="changeQty(index,1)">+</button>
+                                    <div class="input-group">
+                                        <button class="btn btn-outline-secondary" type="button" @click="changeQty(index,-1)">−</button>
+                                        <input type="number" class="form-control text-center" x-model.number="item.quantity" @change="recalc()" min="0.001" step="1">
+                                        <button class="btn btn-outline-secondary" type="button" @click="changeQty(index,1)">+</button>
                                     </div>
                                 </td>
-                                <td><input type="number" class="form-control form-control-sm" x-model.number="item.unit_price" @change="recalc()" step="0.01"></td>
-                                <td><input type="number" class="form-control form-control-sm" x-model.number="item.discount" @change="recalc()" step="0.01" min="0"></td>
-                                <td x-text="lineTotal(item).toFixed(2)"></td>
-                                <td><button class="btn btn-sm btn-outline-danger" @click="remove(index)">&times;</button></td>
+                                <td class="fw-semibold" x-text="lineTotal(item).toFixed(2)"></td>
+                                <td><button class="btn btn-outline-danger" type="button" @click="remove(index)">×</button></td>
                             </tr>
                         </template>
-                        <tr x-show="!cart.length"><td colspan="6" class="text-center text-muted">Cart is empty — start scanning</td></tr>
+                        <tr x-show="!cart.length">
+                            <td colspan="4" class="text-center text-muted py-4">No items yet — scan a product</td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
-                <div class="text-danger small" x-text="error" x-show="error"></div>
             </div>
         </div>
     </div>
@@ -64,47 +93,56 @@
     <div class="col-xl-5">
         <div class="card">
             <div class="card-body">
+                <h5 class="mb-3">3) Take payment</h5>
+
                 <div class="mb-3">
-                    <label class="form-label">Customer (required for credit)</label>
-                    <select class="form-select" x-model="customer_id">
-                        <option value="">Walk-in customer</option>
+                    <label class="form-label">Customer (only for credit / debt)</label>
+                    <select class="form-select form-select-lg" x-model="customer_id">
+                        <option value="">Walk-in (cash customer)</option>
                         @foreach($customers as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }} @if($c->phone) ({{ $c->phone }}) @endif</option>
+                            <option value="{{ $c->id }}">{{ $c->name }}@if($c->phone) — {{ $c->phone }}@endif</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="d-flex justify-content-between mb-2"><span>Subtotal</span><strong x-text="subtotal.toFixed(2) + ' AFN'"></strong></div>
-                <div class="mb-2">
-                    <label class="form-label">Overall Discount</label>
-                    <input type="number" class="form-control" x-model.number="discount" @change="recalc()" min="0" step="0.01">
+
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                    <span class="fs-5">Total</span>
+                    <strong class="fs-3 text-primary" x-text="grandTotal.toFixed(2) + ' AFN'"></strong>
                 </div>
-                <div class="d-flex justify-content-between mb-2 fs-4"><span>Grand Total</span><strong class="text-primary" x-text="grandTotal.toFixed(2) + ' AFN'"></strong></div>
+
                 <div class="mb-3">
-                    <label class="form-label d-block">Sale Type (Cash only — AFN)</label>
-                    <div class="btn-group w-100" role="group">
-                        <button type="button" class="btn"
+                    <label class="form-label d-block">Payment type</label>
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-lg"
                                 :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
-                                @click="setSaleType('cash')">Cash Payment</button>
-                        <button type="button" class="btn"
+                                @click="setSaleType('cash')">
+                            Cash Payment
+                        </button>
+                        <button type="button" class="btn btn-lg"
                                 :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
-                                @click="setSaleType('credit')">Credit Sale</button>
+                                @click="setSaleType('credit')">
+                            Credit Sale (pay later)
+                        </button>
                     </div>
-                    <small class="text-muted" x-show="sale_type === 'credit'">Customer required. Pay now (optional) or pay later in cash.</small>
-                    <small class="text-muted" x-show="sale_type === 'cash'">Full or partial cash. Partial needs a customer for remaining debt.</small>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label" x-text="sale_type === 'credit' ? 'Cash Paid Now (optional)' : 'Cash Received'"></label>
-                    <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="0.01">
+
+                <div class="mb-3">
+                    <label class="form-label" x-text="sale_type === 'credit' ? 'Cash paid now (can be 0)' : 'Cash received from customer'"></label>
+                    <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="1">
                 </div>
-                <div class="d-flex justify-content-between mb-3">
-                    <span x-text="amount_paid >= grandTotal ? 'Change (AFN)' : 'Remaining Debt (AFN)'"></span>
-                    <strong x-text="(amount_paid >= grandTotal ? (amount_paid - grandTotal) : (grandTotal - amount_paid)).toFixed(2) + ' AFN'"></strong>
+
+                <div class="d-flex justify-content-between mb-3 fs-5">
+                    <span x-text="amount_paid >= grandTotal ? 'Change' : 'Still owing'"></span>
+                    <strong x-text="(Math.abs(amount_paid - grandTotal)).toFixed(2) + ' AFN'"></strong>
                 </div>
-                <button class="btn btn-success w-100 btn-lg" :disabled="busy || !cart.length" @click="checkout()">
-                    <span x-show="!busy" x-text="sale_type === 'credit' ? 'Complete Credit Sale' : 'Complete Cash Sale'"></span>
-                    <span x-show="busy">Processing...</span>
+
+                <button class="btn btn-success w-100 btn-lg py-3" :disabled="busy || !cart.length" @click="checkout()">
+                    <span x-show="!busy">Finish Sale & Print</span>
+                    <span x-show="busy">Please wait...</span>
                 </button>
-                <button class="btn btn-outline-secondary w-100 mt-2" @click="clearCart()" :disabled="!cart.length">Clear Cart</button>
+                <button class="btn btn-outline-secondary w-100 mt-2" type="button" @click="clearCart()" :disabled="!cart.length">
+                    Clear cart
+                </button>
             </div>
         </div>
     </div>
@@ -129,43 +167,44 @@ function posApp() {
         grandTotal: 0,
         busy: false,
         error: '',
+        okMsg: '',
         init() {
             this.$nextTick(() => this.$refs.barcode?.focus());
+            // Keep focus ready for scanner after clicks
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('input, select, button, a, textarea')) return;
+                this.$refs.barcode?.focus();
+            });
         },
         setSaleType(type) {
             this.sale_type = type;
-            if (type === 'cash') {
-                this.amount_paid = this.grandTotal;
-            } else {
-                this.amount_paid = 0;
-            }
+            this.amount_paid = type === 'cash' ? this.grandTotal : 0;
+            this.$refs.barcode?.focus();
         },
         lineTotal(item) {
-            return Math.max(0, (item.quantity * item.unit_price) - (item.discount || 0));
+            return Math.max(0, (Number(item.quantity) * Number(item.unit_price)) - (Number(item.discount) || 0));
         },
         recalc() {
             this.subtotal = this.cart.reduce((s, i) => s + this.lineTotal(i), 0);
             this.grandTotal = Math.max(0, this.subtotal - (this.discount || 0));
-            if (this.sale_type === 'cash') {
-                this.amount_paid = this.grandTotal;
-            }
+            if (this.sale_type === 'cash') this.amount_paid = this.grandTotal;
         },
         async scan() {
             this.error = '';
+            this.okMsg = '';
             const code = this.query.trim();
             if (!code) return;
             try {
                 const res = await fetch(`{{ route('pos.lookup') }}?barcode=${encodeURIComponent(code)}`);
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Not found');
+                if (!res.ok) throw new Error(data.message || 'Product not found');
                 this.addProduct(data);
-                this.query = '';
-                this.$refs.barcode.focus();
+                this.okMsg = 'Added: ' + data.name;
             } catch (e) {
                 this.error = e.message;
-                this.query = '';
-                this.$refs.barcode.focus();
             }
+            this.query = '';
+            this.$refs.barcode.focus();
         },
         async liveSearch() {
             if (!this.searchTerm.trim()) { this.results = []; return; }
@@ -202,6 +241,7 @@ function posApp() {
             if (next > item.stock) { this.error = 'Not enough stock'; return; }
             item.quantity = next;
             this.recalc();
+            this.$refs.barcode.focus();
         },
         remove(index) {
             this.cart.splice(index, 1);
@@ -213,18 +253,20 @@ function posApp() {
             this.discount = 0;
             this.amount_paid = 0;
             this.sale_type = 'cash';
+            this.okMsg = '';
+            this.error = '';
             this.recalc();
             this.$refs.barcode.focus();
         },
         async checkout() {
             this.error = '';
             if (this.sale_type === 'credit' && !this.customer_id) {
-                this.error = 'Select a customer for credit sale.';
+                this.error = 'For credit sale, choose a customer.';
                 toastr.error(this.error);
                 return;
             }
             if (this.sale_type === 'cash' && this.amount_paid + 0.001 < this.grandTotal && !this.customer_id) {
-                this.error = 'Partial cash payment needs a customer for remaining debt.';
+                this.error = 'Partial cash needs a customer for remaining debt.';
                 toastr.error(this.error);
                 return;
             }
@@ -240,20 +282,20 @@ function posApp() {
                     body: JSON.stringify({
                         sale_type: this.sale_type,
                         customer_id: this.customer_id || null,
-                        discount: this.discount || 0,
+                        discount: 0,
                         amount_paid: this.amount_paid || 0,
                         items: this.cart.map(i => ({
                             product_id: i.product_id,
                             quantity: i.quantity,
                             unit_price: i.unit_price,
-                            discount: i.discount || 0,
+                            discount: 0,
                         })),
                     }),
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Checkout failed');
+                if (!res.ok) throw new Error(data.message || 'Sale failed');
                 this.clearCart();
-                toastr.success('Sale ' + data.invoice_number + ' completed');
+                toastr.success('Sale done: ' + data.invoice_number);
                 window.open(data.print_url, '_blank');
             } catch (e) {
                 this.error = e.message;
