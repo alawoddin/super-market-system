@@ -12,13 +12,6 @@
     <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Dashboard</a>
 </div>
 
-<div class="alert alert-info py-2 mb-3">
-    <strong>No barcode?</strong> No problem —
-    type the product name (example: <em>oil</em>) and press Enter,
-    or click the product button below.
-    Barcode scanner is optional.
-</div>
-
 <div class="row g-3">
     <div class="col-xl-7">
         <div class="card border-primary">
@@ -223,7 +216,6 @@ function posApp() {
             if (p.stock <= 0) {
                 this.error = p.name + ' has no stock. First buy stock in Purchases.';
                 this.okMsg = '';
-                toastr.warning(this.error);
                 return;
             }
             const existing = this.cart.find(i => i.product_id === p.id);
@@ -274,12 +266,10 @@ function posApp() {
             this.error = '';
             if (this.sale_type === 'credit' && !this.customer_id) {
                 this.error = 'For credit sale, choose a customer.';
-                toastr.error(this.error);
                 return;
             }
             if (this.sale_type === 'cash' && this.amount_paid + 0.001 < this.grandTotal && !this.customer_id) {
                 this.error = 'Partial cash needs a customer for remaining debt.';
-                toastr.error(this.error);
                 return;
             }
             this.busy = true;
@@ -307,11 +297,10 @@ function posApp() {
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.message || 'Sale failed');
                 this.clearCart();
-                toastr.success('Sale done: ' + data.invoice_number);
+                this.okMsg = 'Sale done: ' + data.invoice_number;
                 window.open(data.print_url, '_blank');
             } catch (e) {
                 this.error = e.message;
-                toastr.error(e.message);
             } finally {
                 this.busy = false;
                 this.$refs.barcode.focus();

@@ -26,7 +26,7 @@ class DashboardController extends Controller
             ->where('quantity_remaining', '>', 0)
             ->whereNotNull('expiration_date')
             ->whereDate('expiration_date', '>=', now())
-            ->whereDate('expiration_date', '<=', now()->addDays((int) (setting('expiration_alert_days') ?? 7)))
+            ->whereDate('expiration_date', '<=', now()->addDays((int) (\setting('expiration_alert_days') ?? 7)))
             ->orderBy('expiration_date')
             ->limit(8)
             ->get();

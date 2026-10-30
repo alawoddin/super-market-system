@@ -106,17 +106,35 @@ class ReportService
     {
         $today = now()->toDateString();
 
-        $todaySales = Sale::query()->where('status', 'completed')->whereDate('sale_date', $today);
-        $todayPurchases = Purchase::query()->where('status', 'confirmed')->whereDate('purchase_date', $today);
-        $todayExpenses = Expense::query()->whereDate('expense_date', $today);
+        $allSales = Sale::query()->where('status', 'completed');
+        $allPurchases = Purchase::query()->where('status', 'confirmed');
+        $allExpenses = Expense::query();
 
-        $expiringDays = (int) (setting('expiration_alert_days') ?? 7);
+        $todaySales = (clone $allSales)->whereDate('sale_date', $today);
+        $todayPurchases = (clone $allPurchases)->whereDate('purchase_date', $today);
+        $todayExpenses = (clone $allExpenses)->whereDate('expense_date', $today);
+
+        $todaySalesTotal = (float) (clone $todaySales)->sum('grand_total');
+        $todayPurchasesTotal = (float) (clone $todayPurchases)->sum('grand_total');
+        $todayExpensesTotal = (float) (clone $todayExpenses)->sum('amount');
+        $todayGrossProfit = (float) (clone $todaySales)->sum(DB::raw('grand_total - cogs'));
+
+        $totalSales = (float) (clone $allSales)->sum('grand_total');
+        $totalPurchases = (float) (clone $allPurchases)->sum('grand_total');
+        $totalExpenses = (float) (clone $allExpenses)->sum('amount');
+        $totalGrossProfit = (float) (clone $allSales)->sum(DB::raw('grand_total - cogs'));
+
+        $expiringDays = (int) (\setting('expiration_alert_days') ?? 7);
 
         return [
-            'today_sales' => (float) (clone $todaySales)->sum('grand_total'),
-            'today_purchases' => (float) (clone $todayPurchases)->sum('grand_total'),
-            'today_expenses' => (float) (clone $todayExpenses)->sum('amount'),
-            'today_profit' => (float) (clone $todaySales)->sum(DB::raw('grand_total - cogs')) - (float) (clone $todayExpenses)->sum('amount'),
+            'today_sales' => $todaySalesTotal,
+            'today_purchases' => $todayPurchasesTotal,
+            'today_expenses' => $todayExpensesTotal,
+            'today_profit' => $todayGrossProfit - $todayExpensesTotal,
+            'total_sales' => $totalSales,
+            'total_purchases' => $totalPurchases,
+            'total_expenses' => $totalExpenses,
+            'total_profit' => $totalGrossProfit - $totalExpenses,
             'products' => Product::count(),
             'categories' => \App\Models\Category::count(),
             'customers' => Customer::count(),

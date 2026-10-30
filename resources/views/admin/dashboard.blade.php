@@ -4,8 +4,8 @@
 <div class="content"><div class="container-fluid">
 <div class="py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
-        <h4 class="fs-18 fw-semibold m-0">Today Overview</h4>
-        <small class="text-muted">Quick numbers — for selling use <strong>Sell (POS)</strong></small>
+        <h4 class="fs-18 fw-semibold m-0">Dashboard</h4>
+        <small class="text-muted">Daily and total sales, purchases, profit (AFN)</small>
     </div>
     <a href="{{ route('pos.index') }}" class="btn btn-success btn-lg">Open Sell (POS)</a>
 </div>
@@ -17,10 +17,67 @@
 </div>
 
 <div class="row g-3">
+    <div class="col-md-4">
+        <div class="card border-primary h-100">
+            <div class="card-body">
+                <div class="text-muted mb-2">Sales</div>
+                <div class="d-flex justify-content-between align-items-end mb-2">
+                    <div>
+                        <div class="small text-muted">Today</div>
+                        <div class="fs-4 fw-semibold text-primary">{{ money($stats['today_sales']) }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-muted">Total</div>
+                        <div class="fs-5 fw-semibold">{{ money($stats['total_sales']) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-info h-100">
+            <div class="card-body">
+                <div class="text-muted mb-2">Purchases</div>
+                <div class="d-flex justify-content-between align-items-end mb-2">
+                    <div>
+                        <div class="small text-muted">Today</div>
+                        <div class="fs-4 fw-semibold text-info">{{ money($stats['today_purchases']) }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-muted">Total</div>
+                        <div class="fs-5 fw-semibold">{{ money($stats['total_purchases']) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-success h-100">
+            <div class="card-body">
+                <div class="text-muted mb-2">Profit</div>
+                <div class="d-flex justify-content-between align-items-end mb-2">
+                    <div>
+                        <div class="small text-muted">Today</div>
+                        <div class="fs-4 fw-semibold {{ $stats['today_profit'] >= 0 ? 'text-success' : 'text-danger' }}">{{ money($stats['today_profit']) }}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small text-muted">Total</div>
+                        <div class="fs-5 fw-semibold {{ $stats['total_profit'] >= 0 ? '' : 'text-danger' }}">{{ money($stats['total_profit']) }}</div>
+                    </div>
+                </div>
+                <div class="small text-muted">Profit = sales − cost of goods − expenses</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
 @php $cards = [
-['Today Sales', money($stats['today_sales']), 'primary'],
-['Today Profit', money($stats['today_profit']), 'success'],
 ['Customer Debts', money($stats['customer_debts']), 'danger'],
+['Supplier Debts', money($stats['supplier_debts']), 'warning'],
+['Stock Value', money($stats['stock_value']), 'primary'],
 ['Low Stock', $stats['low_stock'], 'warning'],
 ['Products', $stats['products'], 'secondary'],
 ['Customers', $stats['customers'], 'secondary'],

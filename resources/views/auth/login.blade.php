@@ -8,7 +8,6 @@
         <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
         <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
         <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
-        <link rel="stylesheet" type="text/css" href="{{ asset('backend/assets/libs/toastr/build/toastr.min.css') }}" onerror="this.href='https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css'">
     </head>
 
     <body class="bg-white">
@@ -101,26 +100,5 @@
         <script src="{{ asset('backend/assets/libs/node-waves/waves.min.js') }}"></script>
         <script src="{{ asset('backend/assets/libs/feather-icons/feather.min.js') }}"></script>
         <script src="{{ asset('backend/assets/js/app.js') }}"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
-        <script>
-            @if(Session::has('message'))
-                var type = "{{ Session::get('alert-type','info') }}"
-                switch(type){
-                    case 'info':
-                        toastr.info(" {{ Session::get('message') }} ");
-                        break;
-                    case 'success':
-                        toastr.success(" {{ Session::get('message') }} ");
-                        break;
-                    case 'warning':
-                        toastr.warning(" {{ Session::get('message') }} ");
-                        break;
-                    case 'error':
-                        toastr.error(" {{ Session::get('message') }} ");
-                        break;
-                }
-            @endif
-        </script>
     </body>
 </html>

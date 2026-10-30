@@ -11,23 +11,6 @@
     <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary btn-sm">Purchase List</a>
 </div>
 
-@if ($errors->any())
-<div class="alert alert-danger">
-    <strong>Purchase was not saved:</strong>
-    <ul class="mb-0 mt-1">
-        @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-        @endforeach
-    </ul>
-</div>
-@endif
-
-<div class="alert alert-info py-2 mb-3">
-    <strong>Example:</strong> 10 cartons × 30 cans · carton price 1000 AFN
-    → stock = <strong>300</strong> · cost/can = <strong>33.33 AFN</strong>
-    · sell should be higher (e.g. 50 AFN)
-</div>
-
 <form method="POST" action="{{ route('purchases.store') }}" id="purchase-form">
     @csrf
 
@@ -297,7 +280,6 @@
         if (!lines.length) {
             e.preventDefault();
             err.textContent = 'Add at least one product to the purchase list before saving';
-            alert(err.textContent);
         }
     });
 })();
