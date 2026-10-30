@@ -110,7 +110,7 @@ class CustomerController extends Controller
             'is_active' => $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('customers.index')->with(['message' => 'Customer updated', 'alert-type' => 'success']);
+        return redirect()->route('customers.show', $customer);
     }
 
     public function destroy(Customer $customer)

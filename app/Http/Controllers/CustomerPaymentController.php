@@ -44,10 +44,13 @@ class CustomerPaymentController extends Controller
         try {
             $payment = $this->sales->recordCustomerPayment($data);
         } catch (\Throwable $e) {
-            return back()->withInput()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
+            return back()->withInput()->withErrors(['amount' => $e->getMessage()]);
         }
 
-        return redirect()->route('customer-payments.receipt', $payment)->with(['message' => 'Payment recorded', 'alert-type' => 'success']);
+        // After debt payment, return to that customer's page.
+        return redirect()
+            ->route('customers.show', $payment->customer_id)
+            ->with('last_payment_id', $payment->id);
     }
 
     public function receipt(SalePayment $customerPayment)
@@ -58,6 +61,9 @@ class CustomerPaymentController extends Controller
             'payment' => $customerPayment,
             'settings' => Setting::current(),
             'type' => 'customer',
+            'backUrl' => $customerPayment->customer_id
+                ? route('customers.show', $customerPayment->customer_id)
+                : route('customers.index'),
         ]);
     }
 }

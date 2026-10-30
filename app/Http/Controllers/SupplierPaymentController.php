@@ -57,6 +57,9 @@ class SupplierPaymentController extends Controller
             'payment' => $supplierPayment,
             'settings' => Setting::current(),
             'type' => 'supplier',
+            'backUrl' => $supplierPayment->supplier_id
+                ? route('suppliers.show', $supplierPayment->supplier_id)
+                : route('suppliers.index'),
         ]);
     }
 }
