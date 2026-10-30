@@ -50,12 +50,6 @@ class ReportController extends Controller
             ->paginate(30)
             ->withQueryString();
 
-        $total = (clone $rows->getCollection() ? Purchase::query()
-            ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
-            ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
-            : Purchase::query())->sum('grand_total');
-
-        // Fix: recalculate total properly
         $total = Purchase::query()
             ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
