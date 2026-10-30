@@ -60,19 +60,11 @@ class CashRegisterService
 
     public function addSupplierPayment(float $amount, string $method = 'cash'): void
     {
-        if ($method !== 'cash') {
-            return;
-        }
-
         $this->mutateOpen(fn (CashRegister $r) => $r->supplier_payments = (float) $r->supplier_payments + $amount);
     }
 
     public function addCashExpense(float $amount, string $method = 'cash'): void
     {
-        if ($method !== 'cash') {
-            return;
-        }
-
         $this->mutateOpen(fn (CashRegister $r) => $r->cash_expenses = (float) $r->cash_expenses + $amount);
     }
 

@@ -88,7 +88,7 @@ class PurchaseService
             }
 
             if ($amountPaid > 0) {
-                $this->recordPayment($purchase, $amountPaid, $data['payment_method'] ?? 'cash', 'Initial purchase payment');
+                $this->recordPayment($purchase, $amountPaid, 'cash', 'Initial cash purchase payment');
             }
 
             return $purchase->load(['items.product', 'supplier', 'payments']);
@@ -97,7 +97,7 @@ class PurchaseService
 
     public function recordPayment(Purchase $purchase, float $amount, string $method = 'cash', ?string $notes = null): PurchasePayment
     {
-        return DB::transaction(function () use ($purchase, $amount, $method, $notes) {
+        return DB::transaction(function () use ($purchase, $amount, $notes) {
             $purchase = Purchase::query()->lockForUpdate()->findOrFail($purchase->id);
 
             if ($amount <= 0) {
@@ -108,6 +108,7 @@ class PurchaseService
                 throw new RuntimeException('Payment exceeds remaining balance.');
             }
 
+            // Supplier payments are cash only (AFN).
             $payment = PurchasePayment::query()->create([
                 'purchase_id' => $purchase->id,
                 'supplier_id' => $purchase->supplier_id,
@@ -115,7 +116,7 @@ class PurchaseService
                 'payment_number' => $this->nextPaymentNumber(),
                 'payment_date' => now()->toDateString(),
                 'amount' => round($amount, 2),
-                'payment_method' => $method,
+                'payment_method' => 'cash',
                 'notes' => $notes,
             ]);
 
@@ -124,7 +125,7 @@ class PurchaseService
             $purchase->payment_status = $this->statusFromAmounts((float) $purchase->grand_total, (float) $purchase->amount_paid);
             $purchase->save();
 
-            app(CashRegisterService::class)->addSupplierPayment($amount, $method);
+            app(CashRegisterService::class)->addSupplierPayment($amount, 'cash');
 
             return $payment;
         });

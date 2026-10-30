@@ -57,10 +57,18 @@ class SalesService
             $overallDiscount = (float) ($data['discount'] ?? 0);
             $grandTotal = max(0, $subtotal - $overallDiscount);
             $amountPaid = (float) ($data['amount_paid'] ?? 0);
-            $isCredit = $amountPaid + 0.001 < $grandTotal;
+            $saleType = $data['sale_type'] ?? null;
+            $isCredit = ($saleType === 'credit') || ($amountPaid + 0.001 < $grandTotal);
+
+            // Only cash is supported. Credit means the customer pays the remainder later in cash.
+            $paymentMethod = 'cash';
 
             if ($isCredit && empty($data['customer_id'])) {
                 throw new RuntimeException('Credit sales require a registered customer.');
+            }
+
+            if ($saleType === 'cash' && $amountPaid + 0.001 < $grandTotal && empty($data['customer_id'])) {
+                throw new RuntimeException('Partial cash payment requires a registered customer for the remaining debt.');
             }
 
             if ($amountPaid > $grandTotal) {
@@ -85,7 +93,7 @@ class SalesService
                 'remaining_balance' => $remaining,
                 'change_amount' => $change,
                 'payment_status' => $this->statusFromAmounts($grandTotal, $appliedPaid),
-                'payment_method' => $data['payment_method'] ?? 'cash',
+                'payment_method' => $paymentMethod,
                 'status' => 'completed',
                 'cogs' => 0,
                 'notes' => $data['notes'] ?? null,
@@ -131,13 +139,11 @@ class SalesService
                     'payment_number' => $this->nextPaymentNumber(),
                     'payment_date' => now()->toDateString(),
                     'amount' => $appliedPaid,
-                    'payment_method' => $data['payment_method'] ?? 'cash',
-                    'notes' => 'Sale payment',
+                    'payment_method' => 'cash',
+                    'notes' => 'Cash sale payment',
                 ]);
 
-                if (($data['payment_method'] ?? 'cash') === 'cash') {
-                    app(CashRegisterService::class)->addCashSale($appliedPaid);
-                }
+                app(CashRegisterService::class)->addCashSale($appliedPaid);
             }
 
             return $sale->load(['items.product', 'customer', 'payments', 'user']);
@@ -190,7 +196,7 @@ class SalesService
                 'payment_number' => $this->nextPaymentNumber(),
                 'payment_date' => $data['payment_date'] ?? now()->toDateString(),
                 'amount' => round($amount, 2),
-                'payment_method' => $data['payment_method'] ?? 'cash',
+                'payment_method' => 'cash',
                 'notes' => $data['notes'] ?? null,
             ]);
 
@@ -218,9 +224,7 @@ class SalesService
                 $remainingToApply -= $apply;
             }
 
-            if (($data['payment_method'] ?? 'cash') === 'cash') {
-                app(CashRegisterService::class)->addCustomerDebtPayment($amount);
-            }
+            app(CashRegisterService::class)->addCustomerDebtPayment($amount);
 
             return $payment;
         });

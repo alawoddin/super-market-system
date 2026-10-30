@@ -79,24 +79,29 @@
                     <input type="number" class="form-control" x-model.number="discount" @change="recalc()" min="0" step="0.01">
                 </div>
                 <div class="d-flex justify-content-between mb-2 fs-4"><span>Grand Total</span><strong class="text-primary" x-text="grandTotal.toFixed(2) + ' AFN'"></strong></div>
-                <div class="mb-2">
-                    <label class="form-label">Payment Method</label>
-                    <select class="form-select" x-model="payment_method">
-                        <option value="cash">Cash</option>
-                        <option value="card">Card</option>
-                        <option value="other">Other</option>
-                    </select>
+                <div class="mb-3">
+                    <label class="form-label d-block">Sale Type (Cash only — AFN)</label>
+                    <div class="btn-group w-100" role="group">
+                        <button type="button" class="btn"
+                                :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
+                                @click="setSaleType('cash')">Cash Payment</button>
+                        <button type="button" class="btn"
+                                :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
+                                @click="setSaleType('credit')">Credit Sale</button>
+                    </div>
+                    <small class="text-muted" x-show="sale_type === 'credit'">Customer required. Pay now (optional) or pay later in cash.</small>
+                    <small class="text-muted" x-show="sale_type === 'cash'">Full or partial cash. Partial needs a customer for remaining debt.</small>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label">Amount Received</label>
+                    <label class="form-label" x-text="sale_type === 'credit' ? 'Cash Paid Now (optional)' : 'Cash Received'"></label>
                     <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="0.01">
                 </div>
                 <div class="d-flex justify-content-between mb-3">
-                    <span x-text="amount_paid >= grandTotal ? 'Change' : 'Remaining Debt'"></span>
+                    <span x-text="amount_paid >= grandTotal ? 'Change (AFN)' : 'Remaining Debt (AFN)'"></span>
                     <strong x-text="(amount_paid >= grandTotal ? (amount_paid - grandTotal) : (grandTotal - amount_paid)).toFixed(2) + ' AFN'"></strong>
                 </div>
                 <button class="btn btn-success w-100 btn-lg" :disabled="busy || !cart.length" @click="checkout()">
-                    <span x-show="!busy">Complete Sale</span>
+                    <span x-show="!busy" x-text="sale_type === 'credit' ? 'Complete Credit Sale' : 'Complete Cash Sale'"></span>
                     <span x-show="busy">Processing...</span>
                 </button>
                 <button class="btn btn-outline-secondary w-100 mt-2" @click="clearCart()" :disabled="!cart.length">Clear Cart</button>
@@ -119,7 +124,7 @@ function posApp() {
         customer_id: '',
         discount: 0,
         amount_paid: 0,
-        payment_method: 'cash',
+        sale_type: 'cash',
         subtotal: 0,
         grandTotal: 0,
         busy: false,
@@ -127,13 +132,23 @@ function posApp() {
         init() {
             this.$nextTick(() => this.$refs.barcode?.focus());
         },
+        setSaleType(type) {
+            this.sale_type = type;
+            if (type === 'cash') {
+                this.amount_paid = this.grandTotal;
+            } else {
+                this.amount_paid = 0;
+            }
+        },
         lineTotal(item) {
             return Math.max(0, (item.quantity * item.unit_price) - (item.discount || 0));
         },
         recalc() {
             this.subtotal = this.cart.reduce((s, i) => s + this.lineTotal(i), 0);
             this.grandTotal = Math.max(0, this.subtotal - (this.discount || 0));
-            if (!this.amount_paid) this.amount_paid = this.grandTotal;
+            if (this.sale_type === 'cash') {
+                this.amount_paid = this.grandTotal;
+            }
         },
         async scan() {
             this.error = '';
