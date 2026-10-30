@@ -96,7 +96,9 @@ class ReturnService
             $cashRefund = round($refund - $debtReduction, 2);
 
             $sale->remaining_balance = round((float) $sale->remaining_balance - $debtReduction, 2);
-            if ((float) $sale->remaining_balance <= 0.001 && $sale->items()->sum(DB::raw('quantity - returned_quantity')) <= 0.001) {
+            $sale->load('items');
+            $left = $sale->items->sum(fn ($i) => (float) $i->quantity - (float) $i->returned_quantity);
+            if ((float) $sale->remaining_balance <= 0.001 && $left <= 0.001) {
                 $sale->status = 'returned';
             }
             $sale->save();
