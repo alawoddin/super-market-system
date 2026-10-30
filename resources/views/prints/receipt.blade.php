@@ -48,12 +48,13 @@
         <tr><td>Subtotal</td><td class="right">{{ number_format($sale->subtotal, 2) }}</td></tr>
         <tr><td>Discount</td><td class="right">{{ number_format($sale->discount, 2) }}</td></tr>
         <tr class="bold"><td>Grand Total</td><td class="right">{{ number_format($sale->grand_total, 2) }} AFN</td></tr>
-        <tr><td>Paid ({{ strtoupper($sale->payment_method) }})</td><td class="right">{{ number_format($sale->amount_paid, 2) }}</td></tr>
+        <tr><td>Sale Type</td><td class="right">{{ $sale->remaining_balance > 0 ? 'Credit / Partial Cash' : 'Cash Payment' }}</td></tr>
+        <tr><td>Cash Paid (AFN)</td><td class="right">{{ number_format($sale->amount_paid, 2) }}</td></tr>
         @if($sale->change_amount > 0)
-            <tr><td>Change</td><td class="right">{{ number_format($sale->change_amount, 2) }}</td></tr>
+            <tr><td>Change (AFN)</td><td class="right">{{ number_format($sale->change_amount, 2) }}</td></tr>
         @endif
         @if($sale->remaining_balance > 0)
-            <tr><td>Balance Due</td><td class="right">{{ number_format($sale->remaining_balance, 2) }}</td></tr>
+            <tr><td>Balance Due (AFN)</td><td class="right">{{ number_format($sale->remaining_balance, 2) }}</td></tr>
         @endif
     </table>
     <div class="line"></div>

@@ -217,6 +217,16 @@ function posApp() {
         },
         async checkout() {
             this.error = '';
+            if (this.sale_type === 'credit' && !this.customer_id) {
+                this.error = 'Select a customer for credit sale.';
+                toastr.error(this.error);
+                return;
+            }
+            if (this.sale_type === 'cash' && this.amount_paid + 0.001 < this.grandTotal && !this.customer_id) {
+                this.error = 'Partial cash payment needs a customer for remaining debt.';
+                toastr.error(this.error);
+                return;
+            }
             this.busy = true;
             try {
                 const res = await fetch('{{ route('pos.checkout') }}', {
@@ -227,10 +237,10 @@ function posApp() {
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
+                        sale_type: this.sale_type,
                         customer_id: this.customer_id || null,
                         discount: this.discount || 0,
                         amount_paid: this.amount_paid || 0,
-                        payment_method: this.payment_method,
                         items: this.cart.map(i => ({
                             product_id: i.product_id,
                             quantity: i.quantity,

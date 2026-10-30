@@ -29,7 +29,8 @@
 <h5>Record Payment</h5>
 <form method="POST" action="{{ route('purchases.payments',$purchase) }}">@csrf
 <input type="number" step="0.01" name="amount" class="form-control mb-2" max="{{ $purchase->remaining_balance }}" required>
-<select name="payment_method" class="form-select mb-2"><option value="cash">Cash</option><option value="card">Card</option><option value="other">Other</option></select>
+<input type="hidden" name="payment_method" value="cash">
+<div class="form-control mb-2 bg-light">Cash payment (AFN)</div>
 <textarea name="notes" class="form-control mb-2" placeholder="Notes"></textarea>
 <button class="btn btn-primary w-100">Pay</button>
 </form>

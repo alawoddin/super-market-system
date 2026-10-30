@@ -39,7 +39,8 @@
 <div class="card"><div class="card-body row g-3">
 <div class="col-md-3"><label class="form-label">Discount</label><input type="number" step="0.01" name="discount" class="form-control" value="0"></div>
 <div class="col-md-3"><label class="form-label">Amount Paid</label><input type="number" step="0.01" name="amount_paid" class="form-control" value="0"></div>
-<div class="col-md-3"><label class="form-label">Payment Method</label><select name="payment_method" class="form-select"><option value="cash">Cash</option><option value="card">Card</option><option value="other">Other</option></select></div>
+<input type="hidden" name="payment_method" value="cash">
+<div class="col-md-3"><label class="form-label">Payment</label><input class="form-control" value="Cash (AFN)" disabled></div>
 <div class="col-md-3"><label class="form-label">Notes</label><input name="notes" class="form-control"></div>
 <div class="col-12"><button class="btn btn-primary">Save Purchase</button></div>
 </div></div>

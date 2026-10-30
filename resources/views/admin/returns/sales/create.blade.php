@@ -24,7 +24,8 @@
 @endforeach
 </tbody></table>
 <div class="row g-2">
-<div class="col-md-4"><label class="form-label">Refund Method</label><select name="refund_method" class="form-select"><option value="cash">Cash</option><option value="card">Card</option><option value="other">Other</option></select></div>
+<input type="hidden" name="refund_method" value="cash">
+<div class="col-md-4"><label class="form-label">Refund Method</label><input class="form-control" value="Cash (AFN)" disabled></div>
 <div class="col-md-4 form-check mt-4"><input type="checkbox" name="restock" value="1" class="form-check-input" id="restock" checked><label for="restock" class="form-check-label">Restock inventory</label></div>
 <div class="col-md-12"><textarea name="notes" class="form-control" placeholder="Notes"></textarea></div>
 </div>

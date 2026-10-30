@@ -23,7 +23,7 @@
         <div>Supplier: {{ $payment->supplier?->name }}</div>
     @endif
     <div>Amount: {{ number_format($payment->amount, 2) }} AFN</div>
-    <div>Method: {{ strtoupper($payment->payment_method) }}</div>
+    <div>Method: Cash</div>
     @if($payment->notes)<div>Notes: {{ $payment->notes }}</div>@endif
     <div class="line"></div>
     <div class="center">Thank you</div>

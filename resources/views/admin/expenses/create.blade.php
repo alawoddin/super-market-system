@@ -8,7 +8,8 @@
 <div class="mb-3"><label class="form-label">Category</label><select name="expense_category_id" class="form-select" required>@foreach($categories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
 <div class="mb-3"><label class="form-label">Amount (AFN)</label><input type="number" step="0.01" name="amount" class="form-control" required></div>
 <div class="mb-3"><label class="form-label">Date</label><input type="date" name="expense_date" class="form-control" value="{{ date('Y-m-d') }}" required></div>
-<div class="mb-3"><label class="form-label">Payment Method</label><select name="payment_method" class="form-select"><option value="cash">Cash</option><option value="card">Card</option><option value="other">Other</option></select></div>
+<input type="hidden" name="payment_method" value="cash">
+<div class="mb-3"><label class="form-label">Payment Method</label><input class="form-control" value="Cash (AFN)" disabled></div>
 <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control"></textarea></div>
 <button class="btn btn-primary">Save</button>
 </form></div></div></div></div>
