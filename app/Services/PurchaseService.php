@@ -72,7 +72,23 @@ class PurchaseService
 
                 $product = Product::query()->lockForUpdate()->findOrFail($row['product_id']);
                 $product->purchase_price = $row['unit_cost'];
+                // Optional sell price set at purchase time (used later for POS profit)
+                $itemSource = collect($items)->firstWhere('product_id', $row['product_id'])
+                    ?? collect($items)->first(fn ($i) => (int) $i['product_id'] === (int) $row['product_id']);
+                if ($itemSource && isset($itemSource['selling_price']) && $itemSource['selling_price'] !== null && $itemSource['selling_price'] !== '') {
+                    $product->selling_price = (float) $itemSource['selling_price'];
+                }
                 $product->save();
+
+                $packNote = '';
+                if (! empty($itemSource['cartons']) && ! empty($itemSource['units_per_carton'])) {
+                    $packNote = sprintf(
+                        ' (%s cartons × %s units @ %s AFN/carton)',
+                        $itemSource['cartons'],
+                        $itemSource['units_per_carton'],
+                        $itemSource['carton_price'] ?? ''
+                    );
+                }
 
                 $this->inventory->createBatch([
                     'product_id' => $product->id,
@@ -83,7 +99,7 @@ class PurchaseService
                     'purchase_price' => $row['unit_cost'],
                     'reference_type' => Purchase::class,
                     'reference_id' => $purchase->id,
-                    'notes' => 'Purchase '.$purchase->invoice_number,
+                    'notes' => 'Purchase '.$purchase->invoice_number.$packNote,
                 ]);
             }
 

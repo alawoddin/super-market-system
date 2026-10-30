@@ -31,10 +31,42 @@ class PurchaseController extends Controller
     public function create()
     {
         $suppliers = Supplier::query()->where('is_active', true)->orderBy('name')->get();
-        $products = Product::query()->active()->orderBy('name')->get(['id', 'name', 'barcode', 'purchase_price', 'unit']);
+        $products = Product::query()->active()->orderBy('name')->get([
+            'id', 'name', 'barcode', 'purchase_price', 'selling_price', 'unit',
+        ]);
         $invoice = $this->purchases->nextInvoiceNumber();
 
         return view('admin.purchases.create', compact('suppliers', 'products', 'invoice'));
+    }
+
+    public function lookup(Request $request)
+    {
+        $code = trim((string) $request->get('barcode', $request->get('q', '')));
+        if ($code === '') {
+            return response()->json(['message' => 'Empty barcode'], 422);
+        }
+
+        $product = Product::query()
+            ->active()
+            ->where(function ($q) use ($code) {
+                $q->where('barcode', $code)
+                    ->orWhere('sku', $code)
+                    ->orWhere('name', 'like', "%{$code}%");
+            })
+            ->first();
+
+        if (! $product) {
+            return response()->json(['message' => 'Product not found. Create the product first.'], 404);
+        }
+
+        return response()->json([
+            'id' => $product->id,
+            'name' => $product->name,
+            'barcode' => $product->barcode,
+            'unit' => $product->unit,
+            'purchase_price' => (float) $product->purchase_price,
+            'selling_price' => (float) $product->selling_price,
+        ]);
     }
 
     public function store(Request $request)
@@ -51,6 +83,10 @@ class PurchaseController extends Controller
             'items.*.product_id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.unit_cost' => ['required', 'numeric', 'min:0'],
+            'items.*.selling_price' => ['nullable', 'numeric', 'min:0'],
+            'items.*.cartons' => ['nullable', 'numeric', 'min:0'],
+            'items.*.units_per_carton' => ['nullable', 'numeric', 'min:0'],
+            'items.*.carton_price' => ['nullable', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'items.*.expiration_date' => ['nullable', 'date'],
             'items.*.batch_number' => ['nullable', 'string'],
