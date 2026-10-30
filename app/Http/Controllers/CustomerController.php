@@ -3,19 +3,56 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Support\DataTable;
 use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $customers = Customer::query()
-            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%"))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
+        return view('admin.customers.index');
+    }
 
-        return view('admin.customers.index', compact('customers'));
+    public function datatable(Request $request)
+    {
+        $search = trim((string) data_get($request->input('search'), 'value', ''));
+        $status = $request->input('status');
+
+        $base = Customer::query()
+            ->withSum(['sales as sales_due' => fn ($q) => $q->where('status', 'completed')], 'remaining_balance');
+
+        $filtered = (clone $base)
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('phone', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%");
+                });
+            })
+            ->when($status !== null && $status !== '', fn ($q) => $q->where('is_active', (int) $status));
+
+        return DataTable::response(
+            $request,
+            $base,
+            $filtered,
+            [0 => 'id', 1 => 'name', 2 => 'phone', 3 => 'opening_balance', 4 => 'is_active'],
+            function (Customer $c, int $row) {
+                $debt = round((float) $c->opening_balance + (float) ($c->sales_due ?? 0), 2);
+
+                return [
+                    'DT_RowIndex' => $row,
+                    'name' => e($c->name).($c->address ? '<div class="small text-muted">'.e($c->address).'</div>' : ''),
+                    'phone' => e($c->phone ?: '—'),
+                    'debt' => '<span class="'.($debt > 0 ? 'text-danger fw-semibold' : '').'">'.money($debt).'</span>',
+                    'status' => '<span class="badge bg-'.($c->is_active ? 'success' : 'secondary').'">'.($c->is_active ? 'Active' : 'Off').'</span>',
+                    'actions' => '<div class="text-nowrap text-end">'
+                        .'<a href="'.route('customers.show', $c).'" class="btn btn-sm btn-outline-secondary me-1">View</a>'
+                        .'<a href="'.route('customers.statement', $c).'" class="btn btn-sm btn-outline-info me-1">Statement</a>'
+                        .'<a href="'.route('customers.edit', $c).'" class="btn btn-sm btn-outline-primary">Edit</a></div>',
+                ];
+            },
+            'name'
+        );
     }
 
     public function create()

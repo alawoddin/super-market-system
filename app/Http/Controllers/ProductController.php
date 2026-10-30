@@ -6,6 +6,7 @@ use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\DataTable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -13,22 +14,61 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $products = Product::query()
-            ->with('category')
-            ->search($request->search)
-            ->when($request->category_id, fn ($q, $id) => $q->where('category_id', $id))
-            ->when($request->stock === 'low', fn ($q) => $q->lowStock())
-            ->when($request->stock === 'out', fn ($q) => $q->where('stock_quantity', '<=', 0))
-            ->when($request->status !== null && $request->status !== '', fn ($q) => $q->where('is_active', $request->status))
-            ->latest()
-            ->paginate(15)
-            ->withQueryString();
-
         $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.products.index', compact('products', 'categories'));
+        return view('admin.products.index', compact('categories'));
+    }
+
+    public function datatable(Request $request)
+    {
+        $search = trim((string) data_get($request->input('search'), 'value', ''));
+        $categoryId = $request->input('category_id');
+        $stock = $request->input('stock');
+        $status = $request->input('status');
+
+        $base = Product::query()->with('category');
+        $filtered = (clone $base)
+            ->search($search !== '' ? $search : null)
+            ->when($categoryId, fn ($q, $id) => $q->where('category_id', $id))
+            ->when($stock === 'low', fn ($q) => $q->lowStock())
+            ->when($stock === 'out', fn ($q) => $q->where('stock_quantity', '<=', 0))
+            ->when($status !== null && $status !== '', fn ($q) => $q->where('is_active', (int) $status));
+
+        return DataTable::response(
+            $request,
+            $base,
+            $filtered,
+            [
+                0 => 'id',
+                1 => 'name',
+                2 => 'barcode',
+                3 => 'category_id',
+                4 => 'purchase_price',
+                5 => 'selling_price',
+                6 => 'stock_quantity',
+                7 => 'is_active',
+            ],
+            function (Product $p, int $row) {
+                $stockClass = $p->is_low_stock ? 'text-danger fw-semibold' : '';
+
+                return [
+                    'DT_RowIndex' => $row,
+                    'name' => e($p->name).'<div class="small text-muted">'.e($p->unit).'</div>',
+                    'barcode' => e($p->barcode ?: '—'),
+                    'category' => e($p->category?->name ?? '—'),
+                    'buy' => money($p->purchase_price),
+                    'sell' => money($p->selling_price),
+                    'stock' => '<span class="'.$stockClass.'">'.e(qty_format($p->stock_quantity)).'</span>',
+                    'status' => '<span class="badge bg-'.($p->is_active ? 'success' : 'secondary').'">'.($p->is_active ? 'Active' : 'Off').'</span>',
+                    'actions' => '<div class="text-nowrap text-end">'
+                        .'<a href="'.route('products.show', $p).'" class="btn btn-sm btn-outline-secondary me-1">View</a>'
+                        .'<a href="'.route('products.edit', $p).'" class="btn btn-sm btn-outline-primary">Edit</a></div>',
+                ];
+            },
+            'name'
+        );
     }
 
     public function create()

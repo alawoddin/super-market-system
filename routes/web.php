@@ -40,13 +40,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/password/update', [AdminController::class, 'AdminPasswordUpdate'])->name('admin.password.update');
     Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
 
+    Route::get('categories-datatable', [CategoryController::class, 'datatable'])->name('categories.datatable');
     Route::resource('categories', CategoryController::class)->except(['show']);
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
     Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
     Route::get('products/barcode/generate', [ProductController::class, 'generateBarcodeAjax'])->name('products.barcode.generate');
+    Route::get('products-datatable', [ProductController::class, 'datatable'])->name('products.datatable');
     Route::resource('products', ProductController::class);
     Route::resource('suppliers', SupplierController::class);
     Route::get('customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
+    Route::get('customers-datatable', [CustomerController::class, 'datatable'])->name('customers.datatable');
     Route::resource('customers', CustomerController::class);
 
     Route::post('purchases/{purchase}/payments', [PurchaseController::class, 'addPayment'])->name('purchases.payments');
