@@ -71,6 +71,22 @@ class PurchaseController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->filled('items_json') && ! $request->filled('items')) {
+            $decoded = json_decode($request->input('items_json'), true);
+            if (is_array($decoded)) {
+                $decoded = array_map(function (array $item) {
+                    foreach (['expiration_date', 'batch_number', 'selling_price'] as $key) {
+                        if (array_key_exists($key, $item) && $item[$key] === '') {
+                            $item[$key] = null;
+                        }
+                    }
+
+                    return $item;
+                }, $decoded);
+                $request->merge(['items' => $decoded]);
+            }
+        }
+
         $data = $request->validate([
             'supplier_id' => ['required', 'exists:suppliers,id'],
             'invoice_number' => ['nullable', 'string', 'unique:purchases,invoice_number'],
@@ -90,6 +106,10 @@ class PurchaseController extends Controller
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
             'items.*.expiration_date' => ['nullable', 'date'],
             'items.*.batch_number' => ['nullable', 'string'],
+        ], [
+            'items.required' => 'Add at least one product to the purchase list before saving.',
+            'items.min' => 'Add at least one product to the purchase list before saving.',
+            'supplier_id.required' => 'Please select a supplier.',
         ]);
 
         try {
