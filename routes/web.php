@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::post('purchases/{purchase}/payments', [PurchaseController::class, 'addPayment'])->name('purchases.payments');
     Route::get('purchases/{purchase}/print', [PurchaseController::class, 'print'])->name('purchases.print');
     Route::get('purchases-lookup', [PurchaseController::class, 'lookup'])->name('purchases.lookup');
+    Route::get('purchases-datatable', [PurchaseController::class, 'datatable'])->name('purchases.datatable');
     Route::resource('purchases', PurchaseController::class);
 
     Route::get('pos', [PosController::class, 'index'])->name('pos.index');

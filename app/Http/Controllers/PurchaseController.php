@@ -14,28 +14,99 @@ class PurchaseController extends Controller
     {
     }
 
-    public function index(Request $request)
+    public function index()
     {
-        $purchases = Purchase::query()
-            ->with('supplier')
-            ->when($request->search, function ($q, $s) {
-                $q->where(function ($inner) use ($s) {
-                    $inner->where('invoice_number', 'like', "%{$s}%")
-                        ->orWhereHas('supplier', fn ($sq) => $sq->where('name', 'like', "%{$s}%"));
-                });
-            })
-            ->when($request->supplier_id, fn ($q, $id) => $q->where('supplier_id', $id))
-            ->when($request->payment_status, fn ($q, $status) => $q->where('payment_status', $status))
-            ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
-            ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
-            ->latest('purchase_date')
-            ->latest('id')
-            ->paginate(15)
-            ->withQueryString();
-
         $suppliers = Supplier::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.purchases.index', compact('purchases', 'suppliers'));
+        return view('admin.purchases.index', compact('suppliers'));
+    }
+
+    public function datatable(Request $request)
+    {
+        $draw = (int) $request->input('draw', 1);
+        $start = max(0, (int) $request->input('start', 0));
+        $length = (int) $request->input('length', 25);
+        if ($length < 1 || $length > 200) {
+            $length = 25;
+        }
+
+        $search = trim((string) data_get($request->input('search'), 'value', ''));
+        $supplierId = $request->input('supplier_id');
+        $paymentStatus = $request->input('payment_status');
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $base = Purchase::query()->with(['supplier'])->withCount('items');
+
+        $recordsTotal = (clone $base)->count();
+
+        $filtered = (clone $base)
+            ->when($search !== '', function ($q) use ($search) {
+                $q->where(function ($inner) use ($search) {
+                    $inner->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%")
+                        ->orWhereHas('supplier', fn ($sq) => $sq->where('name', 'like', "%{$search}%"));
+                });
+            })
+            ->when($supplierId, fn ($q, $id) => $q->where('supplier_id', $id))
+            ->when($paymentStatus, fn ($q, $status) => $q->where('payment_status', $status))
+            ->when($from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
+            ->when($to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d));
+
+        $recordsFiltered = (clone $filtered)->count();
+
+        $orderColumnIndex = (int) data_get($request->input('order'), '0.column', 3);
+        $orderDir = strtolower((string) data_get($request->input('order'), '0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $orderMap = [
+            0 => 'id',
+            1 => 'invoice_number',
+            2 => 'supplier_id',
+            3 => 'purchase_date',
+            4 => 'items_count',
+            5 => 'grand_total',
+            6 => 'amount_paid',
+            7 => 'remaining_balance',
+            8 => 'payment_status',
+        ];
+        $orderColumn = $orderMap[$orderColumnIndex] ?? 'purchase_date';
+
+        $rows = $filtered
+            ->orderBy($orderColumn, $orderDir)
+            ->orderByDesc('id')
+            ->skip($start)
+            ->take($length)
+            ->get();
+
+        $data = $rows->values()->map(function (Purchase $p, int $index) use ($start) {
+            $badge = match ($p->payment_status) {
+                'paid' => 'success',
+                'partial' => 'warning',
+                default => 'danger',
+            };
+
+            return [
+                'DT_RowIndex' => $start + $index + 1,
+                'invoice' => '<a href="'.route('purchases.show', $p).'" class="fw-semibold text-decoration-none">'.e($p->invoice_number).'</a>',
+                'supplier' => e($p->supplier?->name ?? '—'),
+                'date' => $p->purchase_date?->format('Y-m-d'),
+                'items' => (int) $p->items_count,
+                'total' => money($p->grand_total),
+                'paid' => money($p->amount_paid),
+                'due' => '<span class="'.($p->remaining_balance > 0 ? 'text-danger fw-semibold' : '').'">'.money($p->remaining_balance).'</span>',
+                'status' => '<span class="badge bg-'.$badge.'">'.e(ucfirst((string) $p->payment_status)).'</span>',
+                'actions' => '<div class="text-nowrap text-end">'
+                    .'<a href="'.route('purchases.show', $p).'" class="btn btn-sm btn-outline-secondary me-1">View</a>'
+                    .'<a href="'.route('purchases.print', $p).'" target="_blank" class="btn btn-sm btn-outline-dark">Print</a>'
+                    .'</div>',
+            ];
+        });
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
+        ]);
     }
 
     public function create()
