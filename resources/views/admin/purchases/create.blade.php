@@ -3,9 +3,12 @@
 @section('admin')
 <div class="content" x-data="purchaseForm()">
 <div class="container-fluid">
-<div class="py-3">
-    <h4 class="m-0">Buy Stock from Supplier</h4>
-    <small class="text-muted">Scan product → enter cartons & cans → click <strong>Add to purchase list</strong> → then Save</small>
+<div class="py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h4 class="m-0">Buy Stock from Supplier</h4>
+        <small class="text-muted">Scan product → enter cartons & cans → click <strong>Add to purchase list</strong> → then Save</small>
+    </div>
+    <a href="{{ route('purchases.index') }}" class="btn btn-outline-secondary btn-sm">Purchase List</a>
 </div>
 
 @if ($errors->any())

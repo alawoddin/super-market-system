@@ -18,14 +18,24 @@ class PurchaseController extends Controller
     {
         $purchases = Purchase::query()
             ->with('supplier')
-            ->when($request->search, fn ($q, $s) => $q->where('invoice_number', 'like', "%{$s}%"))
+            ->when($request->search, function ($q, $s) {
+                $q->where(function ($inner) use ($s) {
+                    $inner->where('invoice_number', 'like', "%{$s}%")
+                        ->orWhereHas('supplier', fn ($sq) => $sq->where('name', 'like', "%{$s}%"));
+                });
+            })
+            ->when($request->supplier_id, fn ($q, $id) => $q->where('supplier_id', $id))
+            ->when($request->payment_status, fn ($q, $status) => $q->where('payment_status', $status))
             ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
             ->latest('purchase_date')
+            ->latest('id')
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.purchases.index', compact('purchases'));
+        $suppliers = Supplier::query()->orderBy('name')->get(['id', 'name']);
+
+        return view('admin.purchases.index', compact('purchases', 'suppliers'));
     }
 
     public function create()

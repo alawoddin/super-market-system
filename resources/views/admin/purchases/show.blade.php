@@ -3,7 +3,10 @@
 @section('admin')
 <div class="content"><div class="container-fluid">
 <div class="py-3 d-flex justify-content-between flex-wrap gap-2">
-<h4>{{ $purchase->invoice_number }}</h4>
+<div>
+<a href="{{ route('purchases.index') }}" class="text-muted text-decoration-none small">&larr; Purchase List</a>
+<h4 class="mb-0 mt-1">{{ $purchase->invoice_number }}</h4>
+</div>
 <div>
 <a href="{{ route('purchases.print',$purchase) }}" target="_blank" class="btn btn-sm btn-outline-dark">Print</a>
 <a href="{{ route('purchase-returns.create',['purchase_id'=>$purchase->id]) }}" class="btn btn-sm btn-outline-warning">Return</a>

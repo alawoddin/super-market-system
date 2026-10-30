@@ -42,6 +42,11 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('purchases.index') }}" class="tp-link">
+                        <i data-feather="shopping-bag"></i><span> Purchase List </span>
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('products.index') }}" class="tp-link">
                         <i data-feather="package"></i><span> Products </span>
                     </a>
