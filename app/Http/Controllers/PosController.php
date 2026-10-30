@@ -19,7 +19,24 @@ class PosController extends Controller
         $customers = Customer::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'phone']);
         $settings = Setting::current();
 
-        return view('admin.pos.index', compact('customers', 'settings'));
+        // Quick-pick buttons for products without using a barcode scanner
+        $quickProducts = Product::query()
+            ->active()
+            ->with('category:id,name')
+            ->orderBy('name')
+            ->get(['id', 'category_id', 'name', 'barcode', 'selling_price', 'stock_quantity', 'unit'])
+            ->map(fn (Product $p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'barcode' => $p->barcode,
+                'category' => $p->category?->name,
+                'selling_price' => (float) $p->selling_price,
+                'stock' => $p->availableQuantity(),
+                'unit' => $p->unit,
+            ])
+            ->values();
+
+        return view('admin.pos.index', compact('customers', 'settings', 'quickProducts'));
     }
 
     public function lookup(Request $request)

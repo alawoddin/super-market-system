@@ -12,22 +12,23 @@
     <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Dashboard</a>
 </div>
 
-<div class="alert alert-primary py-2 mb-3">
-    <strong>How to scan:</strong>
-    Plug USB barcode scanner → click the big box below → scan product.
-    Scanner types the barcode and presses Enter automatically. Product is added to cart.
+<div class="alert alert-info py-2 mb-3">
+    <strong>No barcode?</strong> No problem —
+    type the product name (example: <em>oil</em>) and press Enter,
+    or click the product button below.
+    Barcode scanner is optional.
 </div>
 
 <div class="row g-3">
     <div class="col-xl-7">
         <div class="card border-primary">
             <div class="card-body">
-                <label class="form-label fw-semibold">1) Scan barcode here</label>
+                <label class="form-label fw-semibold">1) Find product (scan OR type name)</label>
                 <div class="input-group input-group-lg mb-2">
                     <input type="text"
                            class="form-control form-control-lg border-primary"
                            style="font-size:1.4rem;"
-                           placeholder="Ready to scan... or type barcode and press Enter"
+                           placeholder="Type oil / product name, or scan barcode, then Enter"
                            x-ref="barcode"
                            x-model="query"
                            @keydown.enter.prevent="scan()"
@@ -37,17 +38,25 @@
                 <div class="text-danger mb-2" x-text="error" x-show="error"></div>
                 <div class="text-success mb-2" x-text="okMsg" x-show="okMsg"></div>
 
-                <label class="form-label fw-semibold mt-2">Or search by name</label>
-                <input type="text" class="form-control form-control-lg" placeholder="Type product name..."
-                       x-model="searchTerm" @input.debounce.300ms="liveSearch()">
-                <div class="list-group mt-2" x-show="results.length">
-                    <template x-for="p in results" :key="p.id">
-                        <button type="button" class="list-group-item list-group-item-action d-flex justify-content-between"
-                                @click="addProduct(p)">
-                            <span x-text="p.name"></span>
-                            <span class="text-muted" x-text="Number(p.selling_price).toFixed(2) + ' AFN'"></span>
-                        </button>
+                <label class="form-label fw-semibold mt-2">Click product to sell (no scanner needed)</label>
+                <input type="text" class="form-control mb-2" placeholder="Filter products..."
+                       x-model="pickFilter">
+                <div class="row g-2 mb-3" style="max-height:220px;overflow:auto;">
+                    <template x-for="p in filteredQuick" :key="p.id">
+                        <div class="col-6 col-md-4">
+                            <button type="button"
+                                    class="btn w-100 text-start border"
+                                    :class="p.stock > 0 ? 'btn-light' : 'btn-outline-secondary'"
+                                    :disabled="p.stock <= 0"
+                                    @click="addProduct(p)">
+                                <div class="fw-semibold text-truncate" x-text="p.name"></div>
+                                <small class="text-muted" x-text="Number(p.selling_price).toFixed(0) + ' AFN · stock ' + p.stock"></small>
+                            </button>
+                        </div>
                     </template>
+                    <div class="col-12 text-muted" x-show="!filteredQuick.length">
+                        No products found. First add product, then add stock with Purchase.
+                    </div>
                 </div>
 
                 <hr>
@@ -156,8 +165,8 @@
 function posApp() {
     return {
         query: '',
-        searchTerm: '',
-        results: [],
+        pickFilter: '',
+        quickProducts: @json($quickProducts),
         cart: [],
         customer_id: '',
         discount: 0,
@@ -168,13 +177,17 @@ function posApp() {
         busy: false,
         error: '',
         okMsg: '',
+        get filteredQuick() {
+            const q = (this.pickFilter || '').toLowerCase().trim();
+            if (!q) return this.quickProducts;
+            return this.quickProducts.filter(p =>
+                (p.name || '').toLowerCase().includes(q) ||
+                (p.category || '').toLowerCase().includes(q) ||
+                (p.barcode || '').toLowerCase().includes(q)
+            );
+        },
         init() {
             this.$nextTick(() => this.$refs.barcode?.focus());
-            // Keep focus ready for scanner after clicks
-            document.addEventListener('click', (e) => {
-                if (e.target.closest('input, select, button, a, textarea')) return;
-                this.$refs.barcode?.focus();
-            });
         },
         setSaleType(type) {
             this.sale_type = type;
@@ -206,13 +219,13 @@ function posApp() {
             this.query = '';
             this.$refs.barcode.focus();
         },
-        async liveSearch() {
-            if (!this.searchTerm.trim()) { this.results = []; return; }
-            const res = await fetch(`{{ route('pos.search') }}?q=${encodeURIComponent(this.searchTerm)}`);
-            this.results = await res.json();
-        },
         addProduct(p) {
-            if (p.stock <= 0) { this.error = 'Out of stock'; return; }
+            if (p.stock <= 0) {
+                this.error = p.name + ' has no stock. First buy stock in Purchases.';
+                this.okMsg = '';
+                toastr.warning(this.error);
+                return;
+            }
             const existing = this.cart.find(i => i.product_id === p.id);
             if (existing) {
                 if (existing.quantity + 1 > p.stock) { this.error = 'Not enough stock'; return; }
@@ -228,10 +241,9 @@ function posApp() {
                     stock: p.stock,
                 });
             }
-            this.results = [];
-            this.searchTerm = '';
             this.recalc();
             this.error = '';
+            this.okMsg = 'Added: ' + p.name;
             this.$refs.barcode.focus();
         },
         changeQty(index, delta) {
