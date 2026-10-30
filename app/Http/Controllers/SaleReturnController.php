@@ -34,7 +34,6 @@ class SaleReturnController extends Controller
     {
         $data = $request->validate([
             'sale_id' => ['required', 'exists:sales,id'],
-            'refund_method' => ['required', 'in:cash,card,other'],
             'restock' => ['nullable', 'boolean'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
@@ -46,7 +45,7 @@ class SaleReturnController extends Controller
 
         try {
             $return = $this->returns->createSaleReturn($sale, $data['items'], [
-                'refund_method' => $data['refund_method'],
+                'refund_method' => 'cash',
                 'restock' => $request->boolean('restock', true),
                 'notes' => $data['notes'] ?? null,
             ]);

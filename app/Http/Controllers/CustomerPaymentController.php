@@ -35,10 +35,11 @@ class CustomerPaymentController extends Controller
             'customer_id' => ['required', 'exists:customers,id'],
             'sale_id' => ['nullable', 'exists:sales,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'payment_date' => ['required', 'date'],
             'notes' => ['nullable', 'string'],
         ]);
+
+        $data['payment_method'] = 'cash';
 
         try {
             $payment = $this->sales->recordCustomerPayment($data);

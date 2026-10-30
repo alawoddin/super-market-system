@@ -51,4 +51,22 @@ return [
         'pack' => 'Pack',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payments (Afghanistan — cash only)
+    |--------------------------------------------------------------------------
+    |
+    | Card and online payments are not supported. Credit sales are allowed
+    | (customer pays later in cash). All amounts are AFN.
+    |
+    */
+    'payment_method' => 'cash',
+    'payment_methods' => [
+        'cash' => 'Cash',
+    ],
+    'sale_types' => [
+        'cash' => 'Cash Payment',
+        'credit' => 'Credit Sale',
+    ],
+
 ];

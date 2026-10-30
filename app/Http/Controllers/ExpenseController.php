@@ -40,13 +40,13 @@ class ExpenseController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'expense_date' => ['required', 'date'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'description' => ['nullable', 'string'],
         ]);
 
+        $data['payment_method'] = 'cash';
         $data['user_id'] = Auth::id();
         $expense = Expense::query()->create($data);
-        $cash->addCashExpense((float) $expense->amount, $expense->payment_method);
+        $cash->addCashExpense((float) $expense->amount, 'cash');
 
         return redirect()->route('expenses.index')->with(['message' => 'Expense recorded', 'alert-type' => 'success']);
     }
@@ -65,10 +65,10 @@ class ExpenseController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'expense_date' => ['required', 'date'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'description' => ['nullable', 'string'],
         ]);
 
+        $data['payment_method'] = 'cash';
         $expense->update($data);
 
         return redirect()->route('expenses.index')->with(['message' => 'Expense updated', 'alert-type' => 'success']);

@@ -45,7 +45,7 @@ class PurchaseController extends Controller
             'purchase_date' => ['required', 'date'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'amount_paid' => ['nullable', 'numeric', 'min:0'],
-            'payment_method' => ['nullable', 'in:cash,card,other'],
+            'payment_method' => ['nullable', 'in:cash'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
@@ -86,12 +86,11 @@ class PurchaseController extends Controller
     {
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'gt:0'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'notes' => ['nullable', 'string'],
         ]);
 
         try {
-            $this->purchases->recordPayment($purchase, (float) $data['amount'], $data['payment_method'], $data['notes'] ?? null);
+            $this->purchases->recordPayment($purchase, (float) $data['amount'], 'cash', $data['notes'] ?? null);
         } catch (\Throwable $e) {
             return back()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
         }

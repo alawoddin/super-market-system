@@ -35,14 +35,13 @@ class SupplierPaymentController extends Controller
         $data = $request->validate([
             'purchase_id' => ['required', 'exists:purchases,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'notes' => ['nullable', 'string'],
         ]);
 
         $purchase = Purchase::findOrFail($data['purchase_id']);
 
         try {
-            $payment = $this->purchases->recordPayment($purchase, (float) $data['amount'], $data['payment_method'], $data['notes'] ?? null);
+            $payment = $this->purchases->recordPayment($purchase, (float) $data['amount'], 'cash', $data['notes'] ?? null);
         } catch (\Throwable $e) {
             return back()->withInput()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
         }

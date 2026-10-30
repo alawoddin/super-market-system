@@ -87,10 +87,10 @@ class PosController extends Controller
     public function checkout(Request $request)
     {
         $data = $request->validate([
+            'sale_type' => ['required', 'in:cash,credit'],
             'customer_id' => ['nullable', 'exists:customers,id'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'amount_paid' => ['required', 'numeric', 'min:0'],
-            'payment_method' => ['required', 'in:cash,card,other'],
             'notes' => ['nullable', 'string'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'exists:products,id'],
@@ -98,6 +98,13 @@ class PosController extends Controller
             'items.*.unit_price' => ['required', 'numeric', 'min:0'],
             'items.*.discount' => ['nullable', 'numeric', 'min:0'],
         ]);
+
+        // Afghanistan operations: cash only (credit = pay later in cash).
+        $data['payment_method'] = 'cash';
+
+        if ($data['sale_type'] === 'credit' && empty($data['customer_id'])) {
+            return response()->json(['message' => 'Credit sales require a registered customer.'], 422);
+        }
 
         try {
             $sale = $this->sales->create($data, $data['items']);
