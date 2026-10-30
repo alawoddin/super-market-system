@@ -76,7 +76,7 @@
                     </div>
                 </li>
                 <li>
-                    <a href="{{ route('expenses.index') }}" class="tp-link"><i data-feather="credit-card"></i><span> Expenses </span></a>
+                    <a href="{{ route('expenses.index') }}" class="tp-link"><i data-feather="file-text"></i><span> Expenses </span></a>
                 </li>
                 <li>
                     <a href="{{ route('cash-register.index') }}" class="tp-link"><i data-feather="briefcase"></i><span> Cash Register </span></a>

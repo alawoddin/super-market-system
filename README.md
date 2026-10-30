@@ -10,7 +10,8 @@ Local supermarket management app for Afghanistan (AFN), built with Laravel 12, B
 - Suppliers & customers with debt tracking
 - Purchases with batch inventory (FEFO / expiry)
 - POS with USB barcode scanner support
-- Cash & credit sales, payments, returns
+- Cash-only payments (AFN) + credit sales (pay later in cash)
+- No card / online payment options
 - Expenses & daily cash register
 - Reports (sales, P&L with real COGS, debts, inventory)
 - Thermal receipt printing (58mm / 80mm)

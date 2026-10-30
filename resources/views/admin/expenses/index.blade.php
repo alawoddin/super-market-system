@@ -12,7 +12,7 @@
 </form>
 <table class="table"><thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th>Method</th><th></th></tr></thead><tbody>
 @foreach($expenses as $e)
-<tr><td>{{ $e->expense_date->format('Y-m-d') }}</td><td>{{ $e->title }}</td><td>{{ $e->category?->name }}</td><td>{{ money($e->amount) }}</td><td>{{ $e->payment_method }}</td>
+<tr><td>{{ $e->expense_date->format('Y-m-d') }}</td><td>{{ $e->title }}</td><td>{{ $e->category?->name }}</td><td>{{ money($e->amount) }}</td><td>Cash</td>
 <td><a href="{{ route('expenses.edit',$e) }}" class="btn btn-sm btn-outline-primary">Edit</a>
 <form action="{{ route('expenses.destroy',$e) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
 @endforeach

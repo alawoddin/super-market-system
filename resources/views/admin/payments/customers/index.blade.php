@@ -7,7 +7,7 @@
 <table class="table"><thead><tr><th>Payment #</th><th>Customer</th><th>Date</th><th>Amount</th><th>Method</th><th></th></tr></thead><tbody>
 @foreach($payments as $p)
 <tr><td>{{ $p->payment_number }}</td><td>{{ $p->customer?->name }}</td><td>{{ $p->payment_date->format('Y-m-d') }}</td>
-<td>{{ money($p->amount) }}</td><td>{{ $p->payment_method }}</td>
+<td>{{ money($p->amount) }}</td><td>Cash</td>
 <td><a href="{{ route('customer-payments.receipt',$p) }}" target="_blank" class="btn btn-sm btn-outline-dark">Receipt</a></td></tr>
 @endforeach
 </tbody></table>{{ $payments->links() }}

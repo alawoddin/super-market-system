@@ -212,6 +212,7 @@ function posApp() {
             this.cart = [];
             this.discount = 0;
             this.amount_paid = 0;
+            this.sale_type = 'cash';
             this.recalc();
             this.$refs.barcode.focus();
         },
