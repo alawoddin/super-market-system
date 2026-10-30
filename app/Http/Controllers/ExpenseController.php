@@ -2,63 +2,87 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
+use App\Services\CashRegisterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExpenseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $expenses = Expense::query()
+            ->with('category')
+            ->when($request->from, fn ($q, $d) => $q->whereDate('expense_date', '>=', $d))
+            ->when($request->to, fn ($q, $d) => $q->whereDate('expense_date', '<=', $d))
+            ->when($request->category_id, fn ($q, $id) => $q->where('expense_category_id', $id))
+            ->latest('expense_date')
+            ->paginate(20)
+            ->withQueryString();
+
+        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.expenses.index', compact('expenses', 'categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.expenses.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request, CashRegisterService $cash)
     {
-        //
+        $data = $request->validate([
+            'expense_category_id' => ['required', 'exists:expense_categories,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'expense_date' => ['required', 'date'],
+            'payment_method' => ['required', 'in:cash,card,other'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $data['user_id'] = Auth::id();
+        $expense = Expense::query()->create($data);
+        $cash->addCashExpense((float) $expense->amount, $expense->payment_method);
+
+        return redirect()->route('expenses.index')->with(['message' => 'Expense recorded', 'alert-type' => 'success']);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function edit(Expense $expense)
     {
-        //
+        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
+
+        return view('admin.expenses.edit', compact('expense', 'categories'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function update(Request $request, Expense $expense)
     {
-        //
+        $data = $request->validate([
+            'expense_category_id' => ['required', 'exists:expense_categories,id'],
+            'title' => ['required', 'string', 'max:255'],
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'expense_date' => ['required', 'date'],
+            'payment_method' => ['required', 'in:cash,card,other'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $expense->update($data);
+
+        return redirect()->route('expenses.index')->with(['message' => 'Expense updated', 'alert-type' => 'success']);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy(Expense $expense)
     {
-        //
+        $expense->delete();
+
+        return redirect()->route('expenses.index')->with(['message' => 'Expense deleted', 'alert-type' => 'success']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function show(Expense $expense)
     {
-        //
+        return redirect()->route('expenses.edit', $expense);
     }
 }
