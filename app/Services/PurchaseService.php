@@ -41,6 +41,10 @@ class PurchaseService
                     'subtotal' => round($line, 2),
                     'expiration_date' => $item['expiration_date'] ?? null,
                     'batch_number' => $item['batch_number'] ?? null,
+                    'selling_price' => $item['selling_price'] ?? null,
+                    'cartons' => $item['cartons'] ?? null,
+                    'units_per_carton' => $item['units_per_carton'] ?? null,
+                    'carton_price' => $item['carton_price'] ?? null,
                 ];
             }
 
@@ -67,26 +71,29 @@ class PurchaseService
             foreach ($normalized as $row) {
                 $purchaseItem = PurchaseItem::query()->create([
                     'purchase_id' => $purchase->id,
-                    ...$row,
+                    'product_id' => $row['product_id'],
+                    'quantity' => $row['quantity'],
+                    'unit_cost' => $row['unit_cost'],
+                    'discount' => $row['discount'],
+                    'subtotal' => $row['subtotal'],
+                    'expiration_date' => $row['expiration_date'],
+                    'batch_number' => $row['batch_number'],
                 ]);
 
                 $product = Product::query()->lockForUpdate()->findOrFail($row['product_id']);
                 $product->purchase_price = $row['unit_cost'];
-                // Optional sell price set at purchase time (used later for POS profit)
-                $itemSource = collect($items)->firstWhere('product_id', $row['product_id'])
-                    ?? collect($items)->first(fn ($i) => (int) $i['product_id'] === (int) $row['product_id']);
-                if ($itemSource && isset($itemSource['selling_price']) && $itemSource['selling_price'] !== null && $itemSource['selling_price'] !== '') {
-                    $product->selling_price = (float) $itemSource['selling_price'];
+                if ($row['selling_price'] !== null && $row['selling_price'] !== '') {
+                    $product->selling_price = (float) $row['selling_price'];
                 }
                 $product->save();
 
                 $packNote = '';
-                if (! empty($itemSource['cartons']) && ! empty($itemSource['units_per_carton'])) {
+                if (! empty($row['cartons']) && ! empty($row['units_per_carton'])) {
                     $packNote = sprintf(
                         ' (%s cartons × %s units @ %s AFN/carton)',
-                        $itemSource['cartons'],
-                        $itemSource['units_per_carton'],
-                        $itemSource['carton_price'] ?? ''
+                        $row['cartons'],
+                        $row['units_per_carton'],
+                        $row['carton_price'] ?? ''
                     );
                 }
 
