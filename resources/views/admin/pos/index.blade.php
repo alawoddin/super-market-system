@@ -4,64 +4,70 @@
 <div class="content" x-data="posApp()" x-init="init()">
 <div class="container-fluid">
 
-<div class="py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+<div class="pos-head">
     <div>
-        <h4 class="m-0">Sell Products (POS)</h4>
-        <small class="text-muted">Simple cash selling · AFN</small>
+        <div class="small text-uppercase text-muted mb-1" style="letter-spacing:.1em">Checkout desk</div>
+        <h1 class="mk-display">Sell</h1>
+        <small class="text-muted">Scan, tap a product, or type the name · AFN</small>
     </div>
-    <a href="{{ route('dashboard') }}" class="btn btn-light btn-sm">Dashboard</a>
+    <div class="d-flex gap-2">
+        <a href="{{ route('dashboard') }}" class="btn btn-light">Dashboard</a>
+        <button type="button" class="btn btn-outline-secondary" @click="clearCart()" :disabled="!cart.length">Clear cart</button>
+    </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-xl-7">
-        <div class="card border-primary">
-            <div class="card-body">
-                <label class="form-label fw-semibold">1) Find product (scan OR type name)</label>
-                <div class="input-group input-group-lg mb-2">
-                    <input type="text"
-                           class="form-control form-control-lg border-primary"
-                           style="font-size:1.4rem;"
-                           placeholder="Type oil / product name, or scan barcode, then Enter"
-                           x-ref="barcode"
-                           x-model="query"
-                           @keydown.enter.prevent="scan()"
-                           autofocus>
-                    <button class="btn btn-primary btn-lg px-4" @click="scan()">Add</button>
-                </div>
-                <div class="text-danger mb-2" x-text="error" x-show="error"></div>
-                <div class="text-success mb-2" x-text="okMsg" x-show="okMsg"></div>
+<div class="pos-shell">
+    <div class="card pos-panel">
+        <div class="card-body">
+            <div class="pos-scan">
+                <input type="text"
+                       placeholder="Scan barcode or type product name, then Enter"
+                       x-ref="barcode"
+                       x-model="query"
+                       @keydown.enter.prevent="scan()"
+                       autofocus>
+                <button type="button" class="btn btn-primary btn-add" @click="scan()">Add</button>
+            </div>
 
-                <label class="form-label fw-semibold mt-2">Click product to sell (no scanner needed)</label>
-                <input type="text" class="form-control mb-2" placeholder="Filter products..."
-                       x-model="pickFilter">
-                <div class="row g-2 mb-3" style="max-height:220px;overflow:auto;">
-                    <template x-for="p in filteredQuick" :key="p.id">
-                        <div class="col-6 col-md-4">
-                            <button type="button"
-                                    class="btn w-100 text-start border"
-                                    :class="p.stock > 0 ? 'btn-light' : 'btn-outline-secondary'"
-                                    :disabled="p.stock <= 0"
-                                    @click="addProduct(p)">
-                                <div class="fw-semibold text-truncate" x-text="p.name"></div>
-                                <small class="text-muted" x-text="Number(p.selling_price).toFixed(0) + ' AFN · stock ' + p.stock"></small>
-                            </button>
+            <div class="pos-msg">
+                <span class="text-danger" x-text="error" x-show="error"></span>
+                <span class="text-success" x-text="okMsg" x-show="okMsg && !error"></span>
+            </div>
+
+            <div class="pos-section-label">
+                <strong>Quick pick</strong>
+                <input type="text" class="form-control form-control-sm pos-filter" style="max-width:220px"
+                       placeholder="Filter…" x-model="pickFilter">
+            </div>
+
+            <div class="pos-grid">
+                <template x-for="p in filteredQuick" :key="p.id">
+                    <button type="button" class="pos-product" :disabled="p.stock <= 0" @click="addProduct(p)">
+                        <div class="name" x-text="p.name"></div>
+                        <div class="meta">
+                            <span class="price" x-text="Number(p.selling_price).toFixed(0) + ' AFN'"></span>
+                            <span x-text="'Stock ' + p.stock"></span>
                         </div>
-                    </template>
-                    <div class="col-12 text-muted" x-show="!filteredQuick.length">
-                        No products found. First add product, then add stock with Purchase.
-                    </div>
+                    </button>
+                </template>
+                <div class="text-muted" style="grid-column:1/-1" x-show="!filteredQuick.length">
+                    No products found. Add a product, then purchase stock.
                 </div>
+            </div>
 
-                <hr>
-                <h5 class="mb-2">2) Cart</h5>
-                <div class="table-responsive" style="max-height:380px;overflow:auto;">
-                    <table class="table table-lg align-middle mb-0">
+            <div class="pos-section-label">
+                <strong>Cart <span class="badge bg-success" x-text="cart.length" x-show="cart.length"></span></strong>
+            </div>
+
+            <div class="pos-cart-wrap">
+                <div class="pos-cart-scroll table-responsive">
+                    <table class="table align-middle mb-0">
                         <thead>
                             <tr>
                                 <th>Product</th>
-                                <th width="130">Qty</th>
-                                <th width="110">Total</th>
-                                <th width="50"></th>
+                                <th style="width:140px">Qty</th>
+                                <th style="width:100px" class="text-end">Line</th>
+                                <th style="width:44px"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -72,18 +78,20 @@
                                     <small class="text-muted" x-text="Number(item.unit_price).toFixed(2) + ' AFN each'"></small>
                                 </td>
                                 <td>
-                                    <div class="input-group">
-                                        <button class="btn btn-outline-secondary" type="button" @click="changeQty(index,-1)">−</button>
-                                        <input type="number" class="form-control text-center" x-model.number="item.quantity" @change="recalc()" min="0.001" step="1">
-                                        <button class="btn btn-outline-secondary" type="button" @click="changeQty(index,1)">+</button>
+                                    <div class="pos-qty">
+                                        <button type="button" @click="changeQty(index,-1)">−</button>
+                                        <input type="number" x-model.number="item.quantity" @change="recalc()" min="0.001" step="1">
+                                        <button type="button" @click="changeQty(index,1)">+</button>
                                     </div>
                                 </td>
-                                <td class="fw-semibold" x-text="lineTotal(item).toFixed(2)"></td>
-                                <td><button class="btn btn-outline-danger" type="button" @click="remove(index)">×</button></td>
+                                <td class="text-end fw-semibold" x-text="lineTotal(item).toFixed(2)"></td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" @click="remove(index)">×</button>
+                                </td>
                             </tr>
                         </template>
                         <tr x-show="!cart.length">
-                            <td colspan="4" class="text-center text-muted py-4">No items yet — scan a product</td>
+                            <td colspan="4" class="text-center text-muted py-5">Cart is empty — scan or tap a product</td>
                         </tr>
                         </tbody>
                     </table>
@@ -92,63 +100,55 @@
         </div>
     </div>
 
-    <div class="col-xl-5">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="mb-3">3) Take payment</h5>
-
-                <div class="mb-3">
-                    <label class="form-label">Customer (only for credit / debt)</label>
-                    <select class="form-select form-select-lg" x-model="customer_id">
-                        <option value="">Walk-in (cash customer)</option>
-                        @foreach($customers as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}@if($c->phone) — {{ $c->phone }}@endif</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
-                    <span class="fs-5">Total</span>
-                    <strong class="fs-3 text-primary" x-text="grandTotal.toFixed(2) + ' AFN'"></strong>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label d-block">Payment type</label>
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-lg"
-                                :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
-                                @click="setSaleType('cash')">
-                            Cash Payment
-                        </button>
-                        <button type="button" class="btn btn-lg"
-                                :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
-                                @click="setSaleType('credit')">
-                            Credit Sale (pay later)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label" x-text="sale_type === 'credit' ? 'Cash paid now (can be 0)' : 'Cash received from customer'"></label>
-                    <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="1">
-                </div>
-
-                <div class="d-flex justify-content-between mb-3 fs-5">
-                    <span x-text="amount_paid >= grandTotal ? 'Change' : 'Still owing'"></span>
-                    <strong x-text="(Math.abs(amount_paid - grandTotal)).toFixed(2) + ' AFN'"></strong>
-                </div>
-
-                <button class="btn btn-success w-100 btn-lg py-3" :disabled="busy || !cart.length" @click="checkout()">
-                    <span x-show="!busy">Finish Sale & Print</span>
-                    <span x-show="busy">Please wait...</span>
-                </button>
-                <button class="btn btn-outline-secondary w-100 mt-2" type="button" @click="clearCart()" :disabled="!cart.length">
-                    Clear cart
-                </button>
+    <div class="card pos-panel pos-pay">
+        <div class="card-body">
+            <div class="pos-total-box">
+                <div class="lbl">Amount due</div>
+                <div class="amt" x-text="grandTotal.toFixed(2) + ' AFN'"></div>
+                <div class="small mt-1" style="opacity:.8" x-text="cart.length + ' item(s) in cart'"></div>
             </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Customer</label>
+                <select class="form-select form-select-lg" x-model="customer_id">
+                    <option value="">Walk-in (cash)</option>
+                    @foreach($customers as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }}@if($c->phone) — {{ $c->phone }}@endif</option>
+                    @endforeach
+                </select>
+                <small class="text-muted">Needed only for credit / partial pay</small>
+            </div>
+
+            <label class="form-label fw-semibold">Payment</label>
+            <div class="pos-pay-type">
+                <button type="button"
+                        class="btn"
+                        :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
+                        @click="setSaleType('cash')">Cash</button>
+                <button type="button"
+                        class="btn"
+                        :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
+                        @click="setSaleType('credit')">Credit</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" x-text="sale_type === 'credit' ? 'Cash paid now (can be 0)' : 'Cash received'"></label>
+                <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="1">
+            </div>
+
+            <div class="pos-due-row">
+                <span x-text="amount_paid >= grandTotal ? 'Change' : 'Still owing'"></span>
+                <strong x-text="(Math.abs(amount_paid - grandTotal)).toFixed(2) + ' AFN'"></strong>
+            </div>
+
+            <button class="btn pos-finish w-100" :disabled="busy || !cart.length" @click="checkout()">
+                <span x-show="!busy">Finish sale & print</span>
+                <span x-show="busy">Processing…</span>
+            </button>
         </div>
     </div>
 </div>
+
 </div>
 </div>
 @endsection
