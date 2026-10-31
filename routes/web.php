@@ -109,6 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::post('backups', [BackupController::class, 'create'])->name('backups.create');
     Route::get('backups/{file}/download', [BackupController::class, 'download'])->name('backups.download');
     Route::post('backups/restore', [BackupController::class, 'restore'])->name('backups.restore');
+    Route::post('backups/delete', [BackupController::class, 'destroy'])->name('backups.destroy');
 });
 
 require __DIR__.'/auth.php';

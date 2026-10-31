@@ -24,29 +24,40 @@ class BackupController extends Controller
         return view('admin.backups.index', compact('files'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         try {
             $filename = $this->backups->create();
         } catch (\Throwable $e) {
-            return back()->with([
-                'message' => 'Backup failed: '.$e->getMessage(),
-                'alert-type' => 'error',
+            return back()->with('backup_status', [
+                'type' => 'error',
+                'text' => 'Backup failed: '.$e->getMessage(),
             ]);
         }
 
-        return back()->with([
-            'message' => 'Backup created successfully: '.$filename,
-            'alert-type' => 'success',
+        // Hosted sites: also download immediately so admin keeps a local copy.
+        if ($request->boolean('download', true)) {
+            $path = $this->backups->path($filename);
+
+            return response()->download($path, $filename, [
+                'Content-Type' => 'application/sql',
+            ]);
+        }
+
+        return back()->with('backup_status', [
+            'type' => 'success',
+            'text' => 'Backup created: '.$filename,
         ]);
     }
 
     public function download(string $file)
     {
-        $path = storage_path('app/backups/'.basename($file));
+        $path = $this->backups->path($file);
         abort_unless(File::exists($path), 404);
 
-        return response()->download($path);
+        return response()->download($path, basename($file), [
+            'Content-Type' => 'application/sql',
+        ]);
     }
 
     public function restore(Request $request)
@@ -55,17 +66,36 @@ class BackupController extends Controller
 
         try {
             $this->backups->restore($request->file);
-            Artisan::call('cache:clear');
+            Artisan::call('optimize:clear');
         } catch (\Throwable $e) {
-            return back()->with([
-                'message' => 'Restore failed: '.$e->getMessage(),
-                'alert-type' => 'error',
+            return back()->with('backup_status', [
+                'type' => 'error',
+                'text' => 'Restore failed: '.$e->getMessage(),
             ]);
         }
 
-        return back()->with([
-            'message' => 'Database restored successfully',
-            'alert-type' => 'success',
+        return back()->with('backup_status', [
+            'type' => 'success',
+            'text' => 'Database restored successfully from '.$request->file,
+        ]);
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate(['file' => ['required', 'string']]);
+
+        try {
+            $this->backups->delete($request->file);
+        } catch (\Throwable $e) {
+            return back()->with('backup_status', [
+                'type' => 'error',
+                'text' => 'Delete failed: '.$e->getMessage(),
+            ]);
+        }
+
+        return back()->with('backup_status', [
+            'type' => 'success',
+            'text' => 'Backup deleted.',
         ]);
     }
 }
