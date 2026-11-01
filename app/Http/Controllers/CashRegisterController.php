@@ -15,10 +15,9 @@ class CashRegisterController extends Controller
     public function index()
     {
         $current = CashRegister::currentOpen();
-        $summary = $current ? $this->service->summary($current) : null;
         $history = CashRegister::query()->with('user')->latest()->paginate(20);
 
-        return view('admin.cash-register.index', compact('current', 'summary', 'history'));
+        return view('admin.cash-register.index', compact('current', 'history'));
     }
 
     public function open(Request $request)
@@ -40,12 +39,11 @@ class CashRegisterController extends Controller
     public function close(Request $request)
     {
         $data = $request->validate([
-            'actual_closing_balance' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],
         ]);
 
         try {
-            $register = $this->service->close((float) $data['actual_closing_balance'], $data['notes'] ?? null);
+            $register = $this->service->close($data['notes'] ?? null);
         } catch (\Throwable $e) {
             return back()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
         }

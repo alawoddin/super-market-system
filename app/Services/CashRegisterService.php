@@ -30,18 +30,18 @@ class CashRegisterService
         ]);
     }
 
-    public function close(float $actualBalance, ?string $notes = null): CashRegister
+    public function close(?string $notes = null): CashRegister
     {
-        return DB::transaction(function () use ($actualBalance, $notes) {
+        return DB::transaction(function () use ($notes) {
             $register = CashRegister::currentOpen();
             if (! $register) {
                 throw new RuntimeException('No open cash register.');
             }
 
             $register = CashRegister::query()->lockForUpdate()->findOrFail($register->id);
-            $expected = $register->recalculateExpected();
-            $register->actual_closing_balance = round($actualBalance, 2);
-            $register->cash_difference = round($actualBalance - $expected, 2);
+            // Closes with the amount worked out from the day: start + sales - expenses - refunds
+            $register->actual_closing_balance = $register->recalculateExpected();
+            $register->cash_difference = 0;
             $register->closed_at = now();
             $register->status = 'closed';
             if ($notes) {

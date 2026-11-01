@@ -1,39 +1,25 @@
 {{-- Day summary for one register. Needs $register and $summary. --}}
-@php
-    $closed = $register->status === 'closed';
-    $diff = (float) $register->cash_difference;
-@endphp
-
 <div class="row g-3 mb-3">
-    <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body">
+    <div class="col-md-4"><div class="card h-100"><div class="card-body">
         <div class="small text-muted">Started with</div>
         <div class="fs-4 fw-semibold">{{ money($register->opening_balance) }}</div>
         <div class="small text-muted">{{ $register->opened_at->format('Y-m-d H:i') }}</div>
     </div></div></div>
-    <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body">
-        <div class="small text-muted">Cash in drawer should be</div>
-        <div class="fs-4 fw-semibold">{{ money($register->expected_closing_balance) }}</div>
-        <div class="small text-muted">start + sales − expenses − refunds</div>
+    <div class="col-md-4"><div class="card h-100"><div class="card-body">
+        <div class="small text-muted">Closed with</div>
+        <div class="fs-4 fw-semibold">{{ money($register->actual_closing_balance ?? $register->expected_closing_balance) }}</div>
+        <div class="small text-muted">{{ $register->closed_at?->format('Y-m-d H:i') ?? 'Still open' }} · start + sales − expenses − refunds</div>
     </div></div></div>
-    <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body">
-        <div class="small text-muted">{{ $closed ? 'Closed with (counted)' : 'Closed with' }}</div>
-        <div class="fs-4 fw-semibold">{{ $closed ? money($register->actual_closing_balance) : '—' }}</div>
-        <div class="small text-muted">{{ $closed ? $register->closed_at->format('Y-m-d H:i') : 'Still open' }}</div>
-    </div></div></div>
-    <div class="col-6 col-xl-3"><div class="card h-100"><div class="card-body">
-        <div class="small text-muted">Short / Over</div>
-        @if($closed)
-            <div class="fs-4 fw-semibold {{ $diff < 0 ? 'text-danger' : ($diff > 0 ? 'text-success' : '') }}">{{ $diff > 0 ? '+' : '' }}{{ money($diff) }}</div>
-            <div class="small text-muted">{{ $diff < 0 ? 'Cash missing' : ($diff > 0 ? 'Extra cash' : 'Drawer is correct') }}</div>
-        @else
-            <div class="fs-4 fw-semibold">—</div><div class="small text-muted">Shown after closing</div>
-        @endif
+    <div class="col-md-4"><div class="card h-100"><div class="card-body">
+        <div class="small text-muted">Net profit</div>
+        <div class="fs-4 fw-semibold {{ $summary['net_profit'] < 0 ? 'text-danger' : 'text-success' }}">{{ money($summary['net_profit']) }}</div>
+        <div class="small text-muted">sales − returns − product cost − expenses</div>
     </div></div></div>
 </div>
 
 <div class="row g-3 mb-3">
     <div class="col-lg-5"><div class="card h-100"><div class="card-body">
-        <h5 class="mb-3">{{ $closed ? 'Day result' : 'Today so far' }}</h5>
+        <h5 class="mb-3">Day result</h5>
         <table class="table table-sm mb-0">
             <tr><td>Sales ({{ $summary['sales_count'] }} receipts, {{ qty_format($summary['items_sold']) }} items)</td><td class="text-end">{{ money($summary['sales_total']) }}</td></tr>
             <tr><td class="text-muted">Discounts given</td><td class="text-end text-muted">{{ money($summary['discounts']) }}</td></tr>
