@@ -37,7 +37,7 @@ class ReturnService
 
                 $qty = (float) $row['quantity'];
                 if ($qty <= 0 || $qty > $saleItem->returnableQuantity() + 0.0001) {
-                    throw new RuntimeException('Invalid return quantity for '.$saleItem->product->name);
+                    throw new RuntimeException('Only '.qty_format($saleItem->returnableQuantity()).' of '.$saleItem->product->name.' can be returned from this sale.');
                 }
 
                 $unitNet = (float) $saleItem->quantity > 0
