@@ -172,35 +172,7 @@
   </div>
 </div>
 
-<div class="row g-3 mt-1">
-  <div class="col-12">
-    <div class="card mk-mini">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="m-0 mk-display">Recent expenses</h5>
-          <a href="{{ route('expenses.index') }}" class="btn btn-sm btn-outline-secondary">View all</a>
-        </div>
-        <div class="table-responsive">
-        <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>Date</th><th>Title</th><th>Description</th><th class="text-end">Amount</th></tr></thead>
-          <tbody>
-          @forelse($recentExpenses as $e)
-            <tr>
-              <td>{{ $e->expense_date->format('Y-m-d') }}</td>
-              <td>{{ $e->title }}</td>
-              <td class="text-muted">{{ \Illuminate\Support\Str::limit($e->description, 60) }}</td>
-              <td class="text-end">{{ money($e->amount) }}</td>
-            </tr>
-          @empty
-            <tr><td colspan="4" class="text-muted">No expenses yet</td></tr>
-          @endforelse
-          </tbody>
-        </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 </div>
 </div>

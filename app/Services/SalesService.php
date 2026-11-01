@@ -55,6 +55,9 @@ class SalesService
             }
 
             $overallDiscount = (float) ($data['discount'] ?? 0);
+            if ($overallDiscount > $subtotal + 0.001) {
+                throw new RuntimeException('Discount cannot be more than the total.');
+            }
             $grandTotal = max(0, $subtotal - $overallDiscount);
             $amountPaid = (float) ($data['amount_paid'] ?? 0);
 

@@ -106,6 +106,13 @@
                 <div class="lbl">Amount due</div>
                 <div class="amt" x-text="grandTotal.toFixed(2) + ' AFN'"></div>
                 <div class="small mt-1" style="opacity:.8" x-text="cart.length + ' item(s) in cart'"></div>
+                <div class="small mt-1" style="opacity:.8" x-show="discount > 0"
+                     x-text="'Subtotal ' + subtotal.toFixed(2) + ' − Discount ' + Number(discount).toFixed(2)"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Discount (AFN)</label>
+                <input type="number" class="form-control form-control-lg" x-model.number="discount" @input="recalc()" min="0" step="1" placeholder="0">
             </div>
 
             <div class="mb-3">
@@ -161,6 +168,8 @@ function posApp() {
         },
         recalc() {
             this.subtotal = this.cart.reduce((s, i) => s + this.lineTotal(i), 0);
+            if (this.discount < 0) this.discount = 0;
+            if (this.discount > this.subtotal) this.discount = this.subtotal;
             this.grandTotal = Math.max(0, this.subtotal - (this.discount || 0));
             this.amount_paid = this.grandTotal;
         },
@@ -246,7 +255,7 @@ function posApp() {
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
-                        discount: 0,
+                        discount: this.discount || 0,
                         amount_paid: this.amount_paid || 0,
                         items: this.cart.map(i => ({
                             product_id: i.product_id,
