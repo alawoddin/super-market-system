@@ -326,6 +326,8 @@ h1, h2, h3, h4, .mk-display {
 .mk-stat-buy::before { background: #1a7a52; }
 .mk-stat-profit { background: linear-gradient(160deg, #ffffff, #fff6df) !important; }
 .mk-stat-profit::before { background: #d4a017; }
+.mk-stat-expense { background: linear-gradient(160deg, #ffffff, #fdeee6) !important; }
+.mk-stat-expense::before { background: #c45c26; }
 
 .mk-stat .label {
     font-size: .78rem;

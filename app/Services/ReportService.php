@@ -131,6 +131,7 @@ class ReportService
             'total_sales' => $totalSales,
             'total_purchases' => $totalPurchases,
             'total_expenses' => $totalExpenses,
+            'month_expenses' => (float) (clone $allExpenses)->whereBetween('expense_date', [now()->startOfMonth()->toDateString(), $today])->sum('amount'),
             'total_profit' => $totalGrossProfit - $totalExpenses,
             'products' => Product::count(),
             'stock_value' => $this->inventoryValuation(),
