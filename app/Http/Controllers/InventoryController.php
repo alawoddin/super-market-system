@@ -17,7 +17,6 @@ class InventoryController extends Controller
     public function index(Request $request)
     {
         $products = Product::query()
-            ->with('category')
             ->search($request->search)
             ->when($request->stock === 'low', fn ($q) => $q->lowStock())
             ->orderBy('name')

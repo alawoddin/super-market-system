@@ -12,7 +12,7 @@
 <table class="table"><thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Min</th><th>Value</th><th>Adjust</th></tr></thead><tbody>
 @foreach($products as $p)
 <tr>
-<td>{{ $p->name }}</td><td>{{ $p->category?->name }}</td>
+<td>{{ $p->name }}</td>
 <td class="{{ $p->is_low_stock?'text-danger fw-bold':'' }}">{{ qty_format($p->stock_quantity) }}</td>
 <td>{{ qty_format($p->min_stock) }}</td>
 <td>{{ money($p->stock_quantity * $p->purchase_price) }}</td>

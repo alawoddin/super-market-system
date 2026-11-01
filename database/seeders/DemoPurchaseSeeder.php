@@ -31,17 +31,7 @@ class DemoPurchaseSeeder extends Seeder
             ?? Product::query()->first();
 
         if (! $product) {
-            $categoryId = \App\Models\Category::query()->value('id');
-            if (! $categoryId) {
-                $categoryId = \App\Models\Category::query()->create([
-                    'name' => 'Drinks',
-                    'slug' => 'drinks',
-                    'is_active' => true,
-                ])->id;
-            }
-
             $product = Product::query()->create([
-                'category_id' => $categoryId,
                 'name' => 'Hit Energy Drink',
                 'sku' => 'HIT-001',
                 'barcode' => '1001',

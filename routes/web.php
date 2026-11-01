@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CashRegisterController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
@@ -40,8 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/admin/password/update', [AdminController::class, 'AdminPasswordUpdate'])->name('admin.password.update');
     Route::get('/admin/logout', [AdminController::class, 'AdminLogout'])->name('admin.logout');
 
-    Route::get('categories-datatable', [CategoryController::class, 'datatable'])->name('categories.datatable');
-    Route::resource('categories', CategoryController::class)->except(['show']);
     Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
     Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
     Route::get('products/barcode/generate', [ProductController::class, 'generateBarcodeAjax'])->name('products.barcode.generate');

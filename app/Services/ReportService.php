@@ -136,7 +136,6 @@ class ReportService
             'total_expenses' => $totalExpenses,
             'total_profit' => $totalGrossProfit - $totalExpenses,
             'products' => Product::count(),
-            'categories' => \App\Models\Category::count(),
             'customers' => Customer::count(),
             'suppliers' => Supplier::count(),
             'stock_value' => $this->inventoryValuation(),

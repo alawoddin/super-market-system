@@ -6,7 +6,7 @@ Local supermarket management app for Afghanistan (AFN), built with Laravel 12, B
 
 - Single admin login (no Google / social auth)
 - Dashboard with live stats & Chart.js
-- Categories & products (barcode, Excel import/export)
+- Products (name, barcode, quantity, prices; Excel import/export)
 - Suppliers & customers with debt tracking
 - Purchases with batch inventory (FEFO / expiry)
 - POS with USB barcode scanner support

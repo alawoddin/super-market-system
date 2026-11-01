@@ -57,11 +57,6 @@
                         <i data-feather="package"></i><span> Products </span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('categories.index') }}" class="tp-link">
-                        <i data-feather="grid"></i><span> Categories </span>
-                    </a>
-                </li>
 
                 <li class="menu-title mt-2">People</li>
                 <li>

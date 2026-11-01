@@ -86,7 +86,7 @@ class ReportController extends Controller
     public function inventory()
     {
         $value = $this->reports->inventoryValuation();
-        $products = Product::query()->with('category')->orderBy('name')->paginate(30);
+        $products = Product::query()->orderBy('name')->paginate(30);
         $lowStock = Product::lowStock()->count();
         $expired = StockBatch::query()->where('quantity_remaining', '>', 0)->whereNotNull('expiration_date')->whereDate('expiration_date', '<', now())->count();
 

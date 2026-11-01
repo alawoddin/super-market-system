@@ -6,9 +6,6 @@
 <div class="row g-3">
 <div class="col-md-6"><div class="card"><div class="card-body">
 <p><strong>Barcode:</strong> {{ $product->barcode }}</p>
-<p><strong>SKU:</strong> {{ $product->sku ?: '-' }}</p>
-<p><strong>Category:</strong> {{ $product->category?->name }}</p>
-<p><strong>Unit:</strong> {{ $product->unit }}</p>
 <p><strong>Purchase:</strong> {{ money($product->purchase_price) }}</p>
 <p><strong>Selling:</strong> {{ money($product->selling_price) }}</p>
 <p><strong>Stock:</strong> {{ qty_format($product->stock_quantity) }}</p>

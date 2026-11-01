@@ -4,34 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Exports\ProductsExport;
 use App\Imports\ProductsImport;
-use App\Models\Category;
 use App\Models\Product;
+use App\Services\InventoryService;
 use App\Support\DataTable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
+    public function __construct(private InventoryService $inventory)
+    {
+    }
+
     public function index()
     {
-        $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
-
-        return view('admin.products.index', compact('categories'));
+        return view('admin.products.index');
     }
 
     public function datatable(Request $request)
     {
         $search = trim((string) data_get($request->input('search'), 'value', ''));
-        $categoryId = $request->input('category_id');
         $stock = $request->input('stock');
         $status = $request->input('status');
 
-        $base = Product::query()->with('category');
+        $base = Product::query();
         $filtered = (clone $base)
             ->search($search !== '' ? $search : null)
-            ->when($categoryId, fn ($q, $id) => $q->where('category_id', $id))
             ->when($stock === 'low', fn ($q) => $q->lowStock())
             ->when($stock === 'out', fn ($q) => $q->where('stock_quantity', '<=', 0))
             ->when($status !== null && $status !== '', fn ($q) => $q->where('is_active', (int) $status));
@@ -44,20 +44,18 @@ class ProductController extends Controller
                 0 => 'id',
                 1 => 'name',
                 2 => 'barcode',
-                3 => 'category_id',
-                4 => 'purchase_price',
-                5 => 'selling_price',
-                6 => 'stock_quantity',
-                7 => 'is_active',
+                3 => 'purchase_price',
+                4 => 'selling_price',
+                5 => 'stock_quantity',
+                6 => 'is_active',
             ],
             function (Product $p, int $row) {
                 $stockClass = $p->is_low_stock ? 'text-danger fw-semibold' : '';
 
                 return [
                     'DT_RowIndex' => $row,
-                    'name' => e($p->name).'<div class="small text-muted">'.e($p->unit).'</div>',
+                    'name' => e($p->name),
                     'barcode' => e($p->barcode ?: '—'),
-                    'category' => e($p->category?->name ?? '—'),
                     'buy' => money($p->purchase_price),
                     'sell' => money($p->selling_price),
                     'stock' => '<span class="'.$stockClass.'">'.e(qty_format($p->stock_quantity)).'</span>',
@@ -73,65 +71,73 @@ class ProductController extends Controller
 
     public function create()
     {
-        $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
-        $units = config('supermarket.units');
-
-        return view('admin.products.create', compact('categories', 'units'));
+        return view('admin.products.create');
     }
 
     public function store(Request $request)
     {
         $data = $this->validated($request);
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
-        }
+        $quantity = (float) $data['quantity'];
+        unset($data['quantity']);
 
         if (empty($data['barcode'])) {
             $data['barcode'] = $this->generateBarcode();
         }
 
-        $data['is_active'] = $request->boolean('is_active', true);
-        $data['track_expiry'] = $request->boolean('track_expiry', true);
+        $data['is_active'] = true;
 
-        Product::query()->create($data);
+        DB::transaction(function () use ($data, $quantity) {
+            $product = Product::query()->create($data);
 
-        return redirect()->route('products.index')->with([
-            'message' => 'Product created successfully',
+            if ($quantity > 0) {
+                $this->inventory->createBatch([
+                    'product_id' => $product->id,
+                    'quantity_received' => $quantity,
+                    'purchase_price' => $product->purchase_price,
+                    'batch_number' => 'OPEN-'.now()->format('YmdHis'),
+                    'notes' => 'Opening stock',
+                ]);
+            }
+        });
+
+        return redirect()->route('products.create')->with([
+            'message' => 'Product saved. Add the next one.',
             'alert-type' => 'success',
         ]);
     }
 
     public function show(Product $product)
     {
-        $product->load(['category', 'stockBatches' => fn ($q) => $q->latest()]);
+        $product->load(['stockBatches' => fn ($q) => $q->latest()]);
 
         return view('admin.products.show', compact('product'));
     }
 
     public function edit(Product $product)
     {
-        $categories = Category::query()->where('is_active', true)->orderBy('name')->get();
-        $units = config('supermarket.units');
-
-        return view('admin.products.edit', compact('product', 'categories', 'units'));
+        return view('admin.products.edit', compact('product'));
     }
 
     public function update(Request $request, Product $product)
     {
         $data = $this->validated($request, $product);
+        $quantity = (float) $data['quantity'];
+        unset($data['quantity']);
 
-        if ($request->hasFile('image')) {
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $data['image'] = $request->file('image')->store('products', 'public');
+        if (empty($data['barcode'])) {
+            $data['barcode'] = $product->barcode;
         }
 
-        $data['is_active'] = $request->boolean('is_active', true);
-        $data['track_expiry'] = $request->boolean('track_expiry', true);
+        $data['is_active'] = $request->boolean('is_active');
 
-        $product->update($data);
+        try {
+            DB::transaction(function () use ($product, $data, $quantity) {
+                $product->update($data);
+                $this->inventory->adjust($product, $quantity, 'Changed from product form');
+            });
+        } catch (\Throwable $e) {
+            return back()->withInput()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
+        }
 
         return redirect()->route('products.index')->with([
             'message' => 'Product updated successfully',
@@ -180,16 +186,11 @@ class ProductController extends Controller
     private function validated(Request $request, ?Product $product = null): array
     {
         return $request->validate([
-            'category_id' => ['required', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product?->id)],
-            'sku' => ['nullable', 'string', 'max:100', Rule::unique('products', 'sku')->ignore($product?->id)],
+            'quantity' => ['required', 'numeric', 'min:0'],
             'purchase_price' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
-            'unit' => ['required', 'string', Rule::in(array_keys(config('supermarket.units')))],
-            'min_stock' => ['required', 'numeric', 'min:0'],
-            'description' => ['nullable', 'string'],
-            'image' => ['nullable', 'image', 'max:2048'],
         ]);
     }
 

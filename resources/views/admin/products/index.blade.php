@@ -16,14 +16,6 @@
 
 <div class="card"><div class="card-body">
 <div class="row g-2 mb-3">
-    <div class="col-md-3">
-        <select id="filter-category" class="form-select">
-            <option value="">All categories</option>
-            @foreach($categories as $c)
-                <option value="{{ $c->id }}">{{ $c->name }}</option>
-            @endforeach
-        </select>
-    </div>
     <div class="col-md-2">
         <select id="filter-stock" class="form-select">
             <option value="">All stock</option>
@@ -55,7 +47,6 @@
             <th>#</th>
             <th>Product</th>
             <th>Barcode</th>
-            <th>Category</th>
             <th>Buy</th>
             <th>Sell</th>
             <th>Stock</th>
@@ -84,7 +75,6 @@ $(function () {
         ajax: {
             url: @json(route('products.datatable')),
             data: function (d) {
-                d.category_id = $('#filter-category').val();
                 d.stock = $('#filter-stock').val();
                 d.status = $('#filter-status').val();
             }
@@ -93,7 +83,6 @@ $(function () {
             { data: 'DT_RowIndex', orderable: false, searchable: false, width: '40px' },
             { data: 'name' },
             { data: 'barcode' },
-            { data: 'category' },
             { data: 'buy', className: 'text-end' },
             { data: 'sell', className: 'text-end' },
             { data: 'stock', className: 'text-end' },
@@ -107,14 +96,14 @@ $(function () {
             { extend: 'csv', className: 'btn btn-sm btn-light', text: 'CSV' }
         ],
         language: {
-            searchPlaceholder: 'Name / barcode / SKU...',
+            searchPlaceholder: 'Name / barcode...',
             processing: 'Loading products...'
         }
     });
 
-    $('#filter-category, #filter-stock, #filter-status').on('change', () => table.ajax.reload());
+    $('#filter-stock, #filter-status').on('change', () => table.ajax.reload());
     $('#btn-reset').on('click', function () {
-        $('#filter-category, #filter-stock, #filter-status').val('');
+        $('#filter-stock, #filter-status').val('');
         table.ajax.reload();
     });
 });

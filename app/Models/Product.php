@@ -13,7 +13,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'category_id', 'name', 'barcode', 'sku', 'purchase_price', 'selling_price',
+        'name', 'barcode', 'sku', 'purchase_price', 'selling_price',
         'unit', 'min_stock', 'stock_quantity', 'description', 'image', 'is_active', 'track_expiry',
     ];
 
@@ -27,11 +27,6 @@ class Product extends Model
             'is_active' => 'boolean',
             'track_expiry' => 'boolean',
         ];
-    }
-
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
     }
 
     public function stockBatches(): HasMany
