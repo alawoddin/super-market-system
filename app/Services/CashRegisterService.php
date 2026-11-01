@@ -53,16 +53,6 @@ class CashRegisterService
         $this->mutateOpen(fn (CashRegister $r) => $r->cash_sales = (float) $r->cash_sales + $amount);
     }
 
-    public function addCustomerDebtPayment(float $amount): void
-    {
-        $this->mutateOpen(fn (CashRegister $r) => $r->customer_debt_payments = (float) $r->customer_debt_payments + $amount);
-    }
-
-    public function addSupplierPayment(float $amount, string $method = 'cash'): void
-    {
-        $this->mutateOpen(fn (CashRegister $r) => $r->supplier_payments = (float) $r->supplier_payments + $amount);
-    }
-
     public function addCashExpense(float $amount, string $method = 'cash'): void
     {
         $this->mutateOpen(fn (CashRegister $r) => $r->cash_expenses = (float) $r->cash_expenses + $amount);

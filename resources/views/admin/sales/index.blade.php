@@ -10,11 +10,11 @@
 <div class="col-md-2"><input type="date" name="to" value="{{ request('to') }}" class="form-control"></div>
 <div class="col-md-2"><button class="btn btn-light">Filter</button></div>
 </form>
-<table class="table table-hover"><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th></th></tr></thead><tbody>
+<table class="table table-hover"><thead><tr><th>Invoice</th><th>Cashier</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>
 @foreach($sales as $s)
 <tr>
-<td>{{ $s->invoice_number }}</td><td>{{ $s->customer?->name ?? 'Walk-in' }}</td><td>{{ $s->sale_date->format('Y-m-d H:i') }}</td>
-<td>{{ money($s->grand_total) }}</td><td>{{ money($s->amount_paid) }}</td><td>{{ money($s->remaining_balance) }}</td>
+<td>{{ $s->invoice_number }}</td><td>{{ $s->user?->name }}</td><td>{{ $s->sale_date->format('Y-m-d H:i') }}</td>
+<td>{{ money($s->grand_total) }}</td>
 <td><span class="badge bg-secondary">{{ $s->status }}</span></td>
 <td><a href="{{ route('sales.show',$s) }}" class="btn btn-sm btn-outline-secondary">View</a>
 <a href="{{ route('sales.receipt',$s) }}" target="_blank" class="btn btn-sm btn-outline-dark">Receipt</a></td>

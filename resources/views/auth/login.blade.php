@@ -59,7 +59,7 @@
             <div style="max-width:520px">
                 <h2>Run your market with clarity</h2>
                 <p class="mb-0" style="opacity:.85;font-size:1.05rem;line-height:1.6">
-                    Track sales, purchases, and profit from the first screen — then sell, restock, and close cash with confidence.
+                    Track sales, stock, and profit from the first screen — then sell, restock, and close cash with confidence.
                 </p>
             </div>
         </div>

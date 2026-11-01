@@ -9,7 +9,7 @@
 <form class="row g-2 mb-3"><div class="col-md-4"><input name="search" value="{{ request('search') }}" class="form-control" placeholder="Search"></div>
 <div class="col-md-2"><select name="stock" class="form-select"><option value="">All</option><option value="low" @selected(request('stock')=='low')>Low stock</option></select></div>
 <div class="col-md-2"><button class="btn btn-light">Filter</button></div></form>
-<table class="table"><thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Min</th><th>Value</th><th>Adjust</th></tr></thead><tbody>
+<table class="table"><thead><tr><th>Product</th><th>Stock</th><th>Min</th><th>Value</th><th>Adjust</th></tr></thead><tbody>
 @foreach($products as $p)
 <tr>
 <td>{{ $p->name }}</td>

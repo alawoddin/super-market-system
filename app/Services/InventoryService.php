@@ -19,7 +19,6 @@ class InventoryService
 
             $batch = StockBatch::query()->create([
                 'product_id' => $product->id,
-                'purchase_item_id' => $data['purchase_item_id'] ?? null,
                 'batch_number' => $data['batch_number'] ?? null,
                 'expiration_date' => $data['expiration_date'] ?? null,
                 'quantity_received' => $qty,

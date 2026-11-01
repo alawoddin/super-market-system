@@ -35,38 +35,16 @@
                         <i data-feather="list"></i><span> Today Sales </span>
                     </a>
                 </li>
-                <li>
-                    <a href="{{ route('customer-payments.create') }}" class="tp-link">
-                        <i data-feather="dollar-sign"></i><span> Take Debt Payment </span>
-                    </a>
-                </li>
 
-                <li class="menu-title mt-2">Add Stock</li>
+                <li class="menu-title mt-2">Products</li>
                 <li>
-                    <a href="{{ route('purchases.create') }}" class="tp-link">
-                        <i data-feather="plus-circle"></i><span> New Purchase </span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('purchases.index') }}" class="tp-link">
-                        <i data-feather="shopping-bag"></i><span> Purchase List </span>
+                    <a href="{{ route('products.create') }}" class="tp-link">
+                        <i data-feather="plus-circle"></i><span> Add Product </span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('products.index') }}" class="tp-link">
-                        <i data-feather="package"></i><span> Products </span>
-                    </a>
-                </li>
-
-                <li class="menu-title mt-2">People</li>
-                <li>
-                    <a href="{{ route('customers.index') }}" class="tp-link">
-                        <i data-feather="users"></i><span> Customers </span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('suppliers.index') }}" class="tp-link">
-                        <i data-feather="truck"></i><span> Suppliers </span>
+                        <i data-feather="package"></i><span> Product List </span>
                     </a>
                 </li>
 
@@ -80,7 +58,6 @@
                             <li><a href="{{ route('inventory.index') }}" class="tp-link">Stock / Expiry</a></li>
                             <li><a href="{{ route('expenses.index') }}" class="tp-link">Expenses</a></li>
                             <li><a href="{{ route('sale-returns.index') }}" class="tp-link">Sale Returns</a></li>
-                            <li><a href="{{ route('purchase-returns.index') }}" class="tp-link">Purchase Returns</a></li>
                             <li><a href="{{ route('reports.index') }}" class="tp-link">Reports</a></li>
                             <li><a href="{{ route('settings.edit') }}" class="tp-link">Settings</a></li>
                             <li><a href="{{ route('backups.index') }}" class="tp-link">Backups</a></li>

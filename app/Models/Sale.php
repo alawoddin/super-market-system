@@ -12,7 +12,7 @@ class Sale extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'invoice_number', 'customer_id', 'user_id', 'sale_date', 'subtotal', 'discount',
+        'invoice_number', 'user_id', 'sale_date', 'subtotal', 'discount',
         'grand_total', 'amount_paid', 'remaining_balance', 'change_amount',
         'payment_status', 'payment_method', 'status', 'cogs', 'notes',
     ];
@@ -31,7 +31,6 @@ class Sale extends Model
         ];
     }
 
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
     public function items(): HasMany { return $this->hasMany(SaleItem::class); }
     public function payments(): HasMany { return $this->hasMany(SalePayment::class); }

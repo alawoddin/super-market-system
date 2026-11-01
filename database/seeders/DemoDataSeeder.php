@@ -12,6 +12,6 @@ class DemoDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // No demo categories, products, customers, or suppliers.
+        // No demo products.
     }
 }

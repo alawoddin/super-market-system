@@ -4,11 +4,8 @@ namespace App\Services;
 
 use App\Models\Expense;
 use App\Models\Product;
-use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\StockBatch;
-use App\Models\Customer;
-use App\Models\Supplier;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -28,7 +25,6 @@ class ReportService
             'count' => (clone $sales)->count(),
             'revenue' => (float) (clone $sales)->sum('grand_total'),
             'cash_received' => (float) (clone $sales)->sum('amount_paid'),
-            'receivables' => (float) (clone $sales)->sum('remaining_balance'),
             'cogs' => (float) (clone $sales)->sum('cogs'),
             'discounts' => (float) (clone $sales)->sum('discount'),
             'profit' => (float) (clone $sales)->sum(DB::raw('grand_total - cogs')),
@@ -107,20 +103,21 @@ class ReportService
         $today = now()->toDateString();
 
         $allSales = Sale::query()->where('status', 'completed');
-        $allPurchases = Purchase::query()->where('status', 'confirmed');
+        // Stock bought = value of stock added from the product form (sales returns excluded)
+        $allPurchases = StockBatch::query()->where('batch_number', 'not like', 'RET-%');
         $allExpenses = Expense::query();
 
         $todaySales = (clone $allSales)->whereDate('sale_date', $today);
-        $todayPurchases = (clone $allPurchases)->whereDate('purchase_date', $today);
+        $todayPurchases = (clone $allPurchases)->whereDate('created_at', $today);
         $todayExpenses = (clone $allExpenses)->whereDate('expense_date', $today);
 
         $todaySalesTotal = (float) (clone $todaySales)->sum('grand_total');
-        $todayPurchasesTotal = (float) (clone $todayPurchases)->sum('grand_total');
+        $todayPurchasesTotal = (float) (clone $todayPurchases)->sum(DB::raw('quantity_received * purchase_price'));
         $todayExpensesTotal = (float) (clone $todayExpenses)->sum('amount');
         $todayGrossProfit = (float) (clone $todaySales)->sum(DB::raw('grand_total - cogs'));
 
         $totalSales = (float) (clone $allSales)->sum('grand_total');
-        $totalPurchases = (float) (clone $allPurchases)->sum('grand_total');
+        $totalPurchases = (float) (clone $allPurchases)->sum(DB::raw('quantity_received * purchase_price'));
         $totalExpenses = (float) (clone $allExpenses)->sum('amount');
         $totalGrossProfit = (float) (clone $allSales)->sum(DB::raw('grand_total - cogs'));
 
@@ -136,8 +133,6 @@ class ReportService
             'total_expenses' => $totalExpenses,
             'total_profit' => $totalGrossProfit - $totalExpenses,
             'products' => Product::count(),
-            'customers' => Customer::count(),
-            'suppliers' => Supplier::count(),
             'stock_value' => $this->inventoryValuation(),
             'low_stock' => Product::lowStock()->count(),
             'expiring' => StockBatch::query()
@@ -151,9 +146,6 @@ class ReportService
                 ->whereNotNull('expiration_date')
                 ->whereDate('expiration_date', '<', now()->toDateString())
                 ->count(),
-            'customer_debts' => (float) Sale::query()->where('status', 'completed')->sum('remaining_balance')
-                + (float) Customer::sum('opening_balance'),
-            'supplier_debts' => Supplier::all()->sum(fn ($s) => $s->outstandingBalance()),
         ];
     }
 

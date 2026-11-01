@@ -9,10 +9,10 @@
         <div>
             <div class="small text-uppercase mb-2" style="letter-spacing:.12em;opacity:.75">Welcome back</div>
             <h1>{{ Auth::user()->name }}, ready for today?</h1>
-            <p>See today’s numbers and all-time totals in one place — then jump into selling or buying stock.</p>
+            <p>See today’s numbers and all-time totals in one place — then jump into selling or adding products.</p>
             <div class="mk-hero-actions">
                 <a href="{{ route('pos.index') }}" class="btn btn-light">Open POS</a>
-                <a href="{{ route('purchases.create') }}" class="btn btn-outline-light">New purchase</a>
+                <a href="{{ route('products.create') }}" class="btn btn-outline-light">Add product</a>
                 <a href="{{ route('cash-register.index') }}" class="btn btn-outline-light">Cash register</a>
             </div>
         </div>
@@ -34,11 +34,11 @@
         </a>
     </div>
     <div class="col-md-4">
-        <a href="{{ route('purchases.create') }}">
+        <a href="{{ route('products.create') }}">
             <span class="icon"><i data-feather="plus-circle"></i></span>
             <span>
-                <strong class="d-block">Buy / add stock</strong>
-                <small class="text-muted">Purchase from suppliers</small>
+                <strong class="d-block">Add product</strong>
+                <small class="text-muted">Name, barcode, quantity, prices</small>
             </span>
         </a>
     </div>
@@ -74,7 +74,7 @@
     <div class="col-md-4">
         <div class="card mk-stat mk-stat-buy h-100">
             <div class="card-body">
-                <div class="label mb-2">Purchases</div>
+                <div class="label mb-2">Stock bought</div>
                 <div class="d-flex justify-content-between align-items-end gap-2">
                     <div>
                         <div class="small text-muted">Today</div>
@@ -110,12 +110,9 @@
 
 <div class="row g-3 mt-1">
 @php $cards = [
-['Customer Debts', money($stats['customer_debts']), 'var(--mk-coral)'],
-['Supplier Debts', money($stats['supplier_debts']), 'var(--mk-gold)'],
 ['Stock Value', money($stats['stock_value']), 'var(--mk-sky)'],
 ['Low Stock', $stats['low_stock'], 'var(--mk-coral)'],
 ['Products', $stats['products'], 'var(--mk-leaf)'],
-['Customers', $stats['customers'], 'var(--mk-pine)'],
 ]; @endphp
 @foreach($cards as $i => [$label,$value,$color])
 <div class="col-md-6 col-xl-4">

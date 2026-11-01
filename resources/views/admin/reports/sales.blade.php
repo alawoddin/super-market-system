@@ -10,14 +10,13 @@
 <div class="row g-2 mb-3">
 <div class="col-md-3"><div class="card card-body">Revenue<br><strong>{{ money($summary['revenue']) }}</strong></div></div>
 <div class="col-md-3"><div class="card card-body">Cash Received<br><strong>{{ money($summary['cash_received']) }}</strong></div></div>
-<div class="col-md-3"><div class="card card-body">Receivables<br><strong>{{ money($summary['receivables']) }}</strong></div></div>
 <div class="col-md-3"><div class="card card-body">Profit<br><strong>{{ money($summary['profit']) }}</strong></div></div>
 </div>
 <div class="card"><div class="card-body">
-<table class="table table-sm"><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th>Total</th><th>Paid</th><th>Due</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th>Invoice</th><th>Cashier</th><th>Date</th><th>Total</th></tr></thead><tbody>
 @foreach($rows as $s)
-<tr><td>{{ $s->invoice_number }}</td><td>{{ $s->customer?->name ?? 'Walk-in' }}</td><td>{{ $s->sale_date->format('Y-m-d') }}</td>
-<td>{{ money($s->grand_total) }}</td><td>{{ money($s->amount_paid) }}</td><td>{{ money($s->remaining_balance) }}</td></tr>
+<tr><td>{{ $s->invoice_number }}</td><td>{{ $s->user?->name }}</td><td>{{ $s->sale_date->format('Y-m-d') }}</td>
+<td>{{ money($s->grand_total) }}</td></tr>
 @endforeach
 </tbody></table>{{ $rows->links() }}
 </div></div></div></div>

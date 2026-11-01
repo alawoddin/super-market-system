@@ -109,35 +109,12 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-semibold">Customer</label>
-                <select class="form-select form-select-lg" x-model="customer_id">
-                    <option value="">Walk-in (cash)</option>
-                    @foreach($customers as $c)
-                        <option value="{{ $c->id }}">{{ $c->name }}@if($c->phone) — {{ $c->phone }}@endif</option>
-                    @endforeach
-                </select>
-                <small class="text-muted">Needed only for credit / partial pay</small>
-            </div>
-
-            <label class="form-label fw-semibold">Payment</label>
-            <div class="pos-pay-type">
-                <button type="button"
-                        class="btn"
-                        :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
-                        @click="setSaleType('cash')">Cash</button>
-                <button type="button"
-                        class="btn"
-                        :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
-                        @click="setSaleType('credit')">Credit</button>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" x-text="sale_type === 'credit' ? 'Cash paid now (can be 0)' : 'Cash received'"></label>
+                <label class="form-label fw-semibold">Cash received</label>
                 <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="1">
             </div>
 
             <div class="pos-due-row">
-                <span x-text="amount_paid >= grandTotal ? 'Change' : 'Still owing'"></span>
+                <span x-text="amount_paid >= grandTotal ? 'Change' : 'Not enough cash'"></span>
                 <strong x-text="(Math.abs(amount_paid - grandTotal)).toFixed(2) + ' AFN'"></strong>
             </div>
 
@@ -161,10 +138,8 @@ function posApp() {
         pickFilter: '',
         quickProducts: @json($quickProducts),
         cart: [],
-        customer_id: '',
         discount: 0,
         amount_paid: 0,
-        sale_type: 'cash',
         subtotal: 0,
         grandTotal: 0,
         busy: false,
@@ -175,17 +150,11 @@ function posApp() {
             if (!q) return this.quickProducts;
             return this.quickProducts.filter(p =>
                 (p.name || '').toLowerCase().includes(q) ||
-                (p.category || '').toLowerCase().includes(q) ||
                 (p.barcode || '').toLowerCase().includes(q)
             );
         },
         init() {
             this.$nextTick(() => this.$refs.barcode?.focus());
-        },
-        setSaleType(type) {
-            this.sale_type = type;
-            this.amount_paid = type === 'cash' ? this.grandTotal : 0;
-            this.$refs.barcode?.focus();
         },
         lineTotal(item) {
             return Math.max(0, (Number(item.quantity) * Number(item.unit_price)) - (Number(item.discount) || 0));
@@ -193,7 +162,7 @@ function posApp() {
         recalc() {
             this.subtotal = this.cart.reduce((s, i) => s + this.lineTotal(i), 0);
             this.grandTotal = Math.max(0, this.subtotal - (this.discount || 0));
-            if (this.sale_type === 'cash') this.amount_paid = this.grandTotal;
+            this.amount_paid = this.grandTotal;
         },
         async scan() {
             this.error = '';
@@ -214,7 +183,7 @@ function posApp() {
         },
         addProduct(p) {
             if (p.stock <= 0) {
-                this.error = p.name + ' has no stock. First buy stock in Purchases.';
+                this.error = p.name + ' has no stock. Add quantity in Products.';
                 this.okMsg = '';
                 return;
             }
@@ -256,7 +225,6 @@ function posApp() {
             this.cart = [];
             this.discount = 0;
             this.amount_paid = 0;
-            this.sale_type = 'cash';
             this.okMsg = '';
             this.error = '';
             this.recalc();
@@ -264,12 +232,8 @@ function posApp() {
         },
         async checkout() {
             this.error = '';
-            if (this.sale_type === 'credit' && !this.customer_id) {
-                this.error = 'For credit sale, choose a customer.';
-                return;
-            }
-            if (this.sale_type === 'cash' && this.amount_paid + 0.001 < this.grandTotal && !this.customer_id) {
-                this.error = 'Partial cash needs a customer for remaining debt.';
+            if (this.amount_paid + 0.001 < this.grandTotal) {
+                this.error = 'Cash received is less than the amount due.';
                 return;
             }
             this.busy = true;
@@ -282,8 +246,6 @@ function posApp() {
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
-                        sale_type: this.sale_type,
-                        customer_id: this.customer_id || null,
                         discount: 0,
                         amount_paid: this.amount_paid || 0,
                         items: this.cart.map(i => ({

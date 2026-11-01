@@ -29,7 +29,6 @@
     <div>Invoice: {{ $sale->invoice_number }}</div>
     <div>Date: {{ $sale->sale_date->format('Y-m-d H:i') }}</div>
     <div>Cashier: {{ $sale->user?->name }}</div>
-    <div>Customer: {{ $sale->customer?->name ?? 'Walk-in' }}</div>
     <div class="line"></div>
     <table>
         @foreach($sale->items as $item)

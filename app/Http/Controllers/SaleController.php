@@ -16,7 +16,7 @@ class SaleController extends Controller
     public function index(Request $request)
     {
         $sales = Sale::query()
-            ->with(['customer', 'user'])
+            ->with('user')
             ->when($request->search, fn ($q, $s) => $q->where('invoice_number', 'like', "%{$s}%"))
             ->when($request->from, fn ($q, $d) => $q->whereDate('sale_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('sale_date', '<=', $d))
@@ -30,14 +30,14 @@ class SaleController extends Controller
 
     public function show(Sale $sale)
     {
-        $sale->load(['customer', 'user', 'items.product', 'payments', 'returns']);
+        $sale->load(['user', 'items.product', 'payments', 'returns']);
 
         return view('admin.sales.show', compact('sale'));
     }
 
     public function receipt(Sale $sale)
     {
-        $sale->load(['customer', 'user', 'items.product', 'payments']);
+        $sale->load(['user', 'items.product', 'payments']);
 
         return view('prints.receipt', [
             'sale' => $sale,

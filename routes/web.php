@@ -3,22 +3,16 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CashRegisterController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\PurchaseReturnController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SaleReturnController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\SupplierController;
-use App\Http\Controllers\SupplierPaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -44,16 +38,6 @@ Route::middleware('auth')->group(function () {
     Route::get('products/barcode/generate', [ProductController::class, 'generateBarcodeAjax'])->name('products.barcode.generate');
     Route::get('products-datatable', [ProductController::class, 'datatable'])->name('products.datatable');
     Route::resource('products', ProductController::class);
-    Route::resource('suppliers', SupplierController::class);
-    Route::get('customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
-    Route::get('customers-datatable', [CustomerController::class, 'datatable'])->name('customers.datatable');
-    Route::resource('customers', CustomerController::class);
-
-    Route::post('purchases/{purchase}/payments', [PurchaseController::class, 'addPayment'])->name('purchases.payments');
-    Route::get('purchases/{purchase}/print', [PurchaseController::class, 'print'])->name('purchases.print');
-    Route::get('purchases-lookup', [PurchaseController::class, 'lookup'])->name('purchases.lookup');
-    Route::get('purchases-datatable', [PurchaseController::class, 'datatable'])->name('purchases.datatable');
-    Route::resource('purchases', PurchaseController::class);
 
     Route::get('pos', [PosController::class, 'index'])->name('pos.index');
     Route::get('pos/lookup', [PosController::class, 'lookup'])->name('pos.lookup');
@@ -77,25 +61,12 @@ Route::middleware('auth')->group(function () {
     Route::get('cash-register/{cashRegister}', [CashRegisterController::class, 'show'])->name('cash-register.show');
 
     Route::resource('sale-returns', SaleReturnController::class)->only(['index', 'create', 'store', 'show']);
-    Route::resource('purchase-returns', PurchaseReturnController::class)->only(['index', 'create', 'store']);
-
-    Route::get('customer-payments', [CustomerPaymentController::class, 'index'])->name('customer-payments.index');
-    Route::get('customer-payments/create', [CustomerPaymentController::class, 'create'])->name('customer-payments.create');
-    Route::post('customer-payments', [CustomerPaymentController::class, 'store'])->name('customer-payments.store');
-    Route::get('customer-payments/{customerPayment}/receipt', [CustomerPaymentController::class, 'receipt'])->name('customer-payments.receipt');
-
-    Route::get('supplier-payments', [SupplierPaymentController::class, 'index'])->name('supplier-payments.index');
-    Route::get('supplier-payments/create', [SupplierPaymentController::class, 'create'])->name('supplier-payments.create');
-    Route::post('supplier-payments', [SupplierPaymentController::class, 'store'])->name('supplier-payments.store');
-    Route::get('supplier-payments/{supplierPayment}/receipt', [SupplierPaymentController::class, 'receipt'])->name('supplier-payments.receipt');
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
-    Route::get('reports/purchases', [ReportController::class, 'purchases'])->name('reports.purchases');
     Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss');
     Route::get('reports/expenses', [ReportController::class, 'expenses'])->name('reports.expenses');
     Route::get('reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
-    Route::get('reports/debts', [ReportController::class, 'debts'])->name('reports.debts');
     Route::get('reports/cash-register', [ReportController::class, 'cashRegister'])->name('reports.cash-register');
     Route::get('reports/export-pdf', [ReportController::class, 'exportPdf'])->name('reports.export-pdf');
 

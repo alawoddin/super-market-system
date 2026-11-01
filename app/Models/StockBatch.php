@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockBatch extends Model
 {
     protected $fillable = [
-        'product_id', 'purchase_item_id', 'batch_number', 'expiration_date',
+        'product_id', 'batch_number', 'expiration_date',
         'quantity_received', 'quantity_remaining', 'purchase_price',
     ];
 
@@ -24,7 +24,6 @@ class StockBatch extends Model
     }
 
     public function product(): BelongsTo { return $this->belongsTo(Product::class); }
-    public function purchaseItem(): BelongsTo { return $this->belongsTo(PurchaseItem::class); }
 
     public function scopeAvailable(Builder $query): Builder
     {

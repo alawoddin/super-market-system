@@ -15,7 +15,6 @@
 <tr><th>Expenses</th><td class="text-end">{{ money($report['expenses']) }}</td></tr>
 <tr class="table-success"><th>Net Profit</th><td class="text-end fw-bold">{{ money($report['net_profit']) }}</td></tr>
 <tr><th>Cash Received</th><td class="text-end">{{ money($report['cash_received']) }}</td></tr>
-<tr><th>Receivables</th><td class="text-end">{{ money($report['receivables']) }}</td></tr>
 </table>
 </div></div></div></div>
 @endsection

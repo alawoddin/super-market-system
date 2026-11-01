@@ -9,8 +9,6 @@
 <p>Closed: {{ $register->closed_at ?? '-' }}</p>
 <p>Opening: {{ money($register->opening_balance) }}</p>
 <p>Cash sales: {{ money($register->cash_sales) }}</p>
-<p>Customer debt payments: {{ money($register->customer_debt_payments) }}</p>
-<p>Supplier payments: {{ money($register->supplier_payments) }}</p>
 <p>Expenses: {{ money($register->cash_expenses) }}</p>
 <p>Refunds: {{ money($register->cash_refunds) }}</p>
 <p>Expected: {{ money($register->expected_closing_balance) }}</p>

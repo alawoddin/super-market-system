@@ -13,7 +13,6 @@
 @endif
 </div></div>
 <div class="card"><div class="card-body">
-<p><strong>Customer:</strong> {{ $sale->customer?->name ?? 'Walk-in' }}</p>
 <p><strong>Cashier:</strong> {{ $sale->user?->name }}</p>
 <p><strong>Date:</strong> {{ $sale->sale_date->format('Y-m-d H:i') }}</p>
 <table class="table"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Disc</th><th>Subtotal</th></tr></thead><tbody>

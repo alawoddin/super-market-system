@@ -6,11 +6,9 @@
 <div class="row g-3">
 @foreach([
 ['Sales Report','reports.sales','daily/weekly/monthly sales'],
-['Purchase Report','reports.purchases','purchase history totals'],
 ['Profit & Loss','reports.profit-loss','COGS-based profit'],
 ['Expense Report','reports.expenses','expense breakdown'],
 ['Inventory Report','reports.inventory','stock valuation'],
-['Debt Report','reports.debts','customer & supplier debts'],
 ['Cash Register','reports.cash-register','register history'],
 ] as [$title,$route,$desc])
 <div class="col-md-4"><a href="{{ route($route) }}" class="card text-decoration-none"><div class="card-body">

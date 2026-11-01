@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SalePayment extends Model
 {
     protected $fillable = [
-        'sale_id', 'customer_id', 'user_id', 'payment_number',
+        'sale_id', 'user_id', 'payment_number',
         'payment_date', 'amount', 'payment_method', 'notes',
     ];
 
@@ -21,6 +21,5 @@ class SalePayment extends Model
     }
 
     public function sale(): BelongsTo { return $this->belongsTo(Sale::class); }
-    public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
 }

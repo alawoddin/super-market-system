@@ -4,11 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Expense;
 use App\Models\Product;
-use App\Models\Purchase;
 use App\Models\Sale;
 use App\Models\StockBatch;
-use App\Models\Customer;
-use App\Models\Supplier;
 use App\Models\CashRegister;
 use App\Services\ReportService;
 use Illuminate\Http\Request;
@@ -29,7 +26,7 @@ class ReportController extends Controller
     {
         $summary = $this->reports->salesSummary($request->from, $request->to);
         $rows = Sale::query()
-            ->with('customer')
+            ->with('user')
             ->where('status', 'completed')
             ->when($request->from, fn ($q, $d) => $q->whereDate('sale_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('sale_date', '<=', $d))
@@ -38,24 +35,6 @@ class ReportController extends Controller
             ->withQueryString();
 
         return view('admin.reports.sales', compact('summary', 'rows'));
-    }
-
-    public function purchases(Request $request)
-    {
-        $rows = Purchase::query()
-            ->with('supplier')
-            ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
-            ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
-            ->latest('purchase_date')
-            ->paginate(30)
-            ->withQueryString();
-
-        $total = Purchase::query()
-            ->when($request->from, fn ($q, $d) => $q->whereDate('purchase_date', '>=', $d))
-            ->when($request->to, fn ($q, $d) => $q->whereDate('purchase_date', '<=', $d))
-            ->sum('grand_total');
-
-        return view('admin.reports.purchases', compact('rows', 'total'));
     }
 
     public function profitLoss(Request $request)
@@ -91,23 +70,6 @@ class ReportController extends Controller
         $expired = StockBatch::query()->where('quantity_remaining', '>', 0)->whereNotNull('expiration_date')->whereDate('expiration_date', '<', now())->count();
 
         return view('admin.reports.inventory', compact('value', 'products', 'lowStock', 'expired'));
-    }
-
-    public function debts()
-    {
-        $customers = Customer::all()->map(fn ($c) => [
-            'name' => $c->name,
-            'phone' => $c->phone,
-            'balance' => $c->outstandingBalance(),
-        ])->filter(fn ($c) => $c['balance'] > 0)->sortByDesc('balance');
-
-        $suppliers = Supplier::all()->map(fn ($s) => [
-            'name' => $s->name,
-            'phone' => $s->phone,
-            'balance' => $s->outstandingBalance(),
-        ])->filter(fn ($s) => $s['balance'] > 0)->sortByDesc('balance');
-
-        return view('admin.reports.debts', compact('customers', 'suppliers'));
     }
 
     public function cashRegister()
