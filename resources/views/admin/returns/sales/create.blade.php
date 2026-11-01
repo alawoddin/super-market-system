@@ -35,7 +35,7 @@
 <input type="hidden" name="sale_item_id" value="{{ $line->id }}">
 <input type="number" name="quantity" class="form-control" style="width:90px" min="0.001" step="any" max="{{ qty_format($line->returnableQuantity()) }}" value="1" required>
 <div class="form-check text-nowrap m-0"><input type="checkbox" name="restock" value="1" class="form-check-input" id="restock{{ $line->id }}" checked><label class="form-check-label" for="restock{{ $line->id }}">Add to stock</label></div>
-<button class="btn btn-warning" onclick="return confirm('Return this item and give the money back?')">Return</button>
+<button class="btn btn-warning" data-confirm="Return this item and give the money back?" data-confirm-button="Yes, return">Return</button>
 </form>
 </td>
 </tr>

@@ -165,6 +165,7 @@ function posApp() {
             );
         },
         init() {
+            this.$watch('error', (msg) => { if (msg) toastr.error(msg); });
             this.$nextTick(() => this.$refs.barcode?.focus());
         },
         lineTotal(item) {
@@ -273,6 +274,7 @@ function posApp() {
                 if (!res.ok) throw new Error(data.message || 'Sale failed');
                 this.clearCart();
                 this.okMsg = 'Sale done: ' + data.invoice_number;
+                toastr.success(this.okMsg);
                 window.open(data.print_url, '_blank');
             } catch (e) {
                 this.error = e.message;

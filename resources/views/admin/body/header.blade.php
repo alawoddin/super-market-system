@@ -16,10 +16,6 @@
             </ul>
 
             <ul class="list-unstyled topnav-menu mb-0 d-flex align-items-center">
-                <li class="d-none d-sm-flex me-1">
-                    <a href="{{ route('pos.index') }}" class="btn btn-success btn-sm">Sell now</a>
-                </li>
-
                 @php
                     $profileData = Auth::user();
                 @endphp
@@ -40,10 +36,12 @@
                             <span>My Account</span>
                         </a>
                         <div class="dropdown-divider"></div>
-                        <a href="{{ route('admin.logout') }}" class="dropdown-item notify-item">
-                            <i class="mdi mdi-location-exit fs-16 align-middle"></i>
-                            <span>Logout</span>
-                        </a>
+                        <form method="POST" action="{{ route('admin.logout') }}">@csrf
+                            <button type="submit" class="dropdown-item notify-item">
+                                <i class="mdi mdi-location-exit fs-16 align-middle"></i>
+                                <span>Logout</span>
+                            </button>
+                        </form>
                     </div>
                 </li>
             </ul>

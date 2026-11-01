@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,550;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('backend/assets/libs/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('css/market-theme.css') }}" rel="stylesheet" type="text/css" />
 </head>
 <body class="mk-login-body">
@@ -65,6 +66,15 @@
         </div>
     </div>
 </div>
+<script src="{{ asset('backend/assets/libs/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('backend/assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('backend/assets/libs/toastr/toastr.min.js') }}"></script>
+@if(session('message'))
+<script>
+toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-top-right', timeOut: 4000 };
+@php $toastType = in_array(session('alert-type'), ['success', 'error', 'warning', 'info'], true) ? session('alert-type') : 'info'; @endphp
+toastr[@json($toastType)](@json(session('message')));
+</script>
+@endif
 </body>
 </html>

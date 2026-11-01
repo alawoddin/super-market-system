@@ -32,7 +32,7 @@
                 </li>
                 <li>
                     <a href="{{ route('sales.index') }}" class="tp-link">
-                        <i data-feather="list"></i><span> Today Sales </span>
+                        <i data-feather="list"></i><span> Sales History </span>
                     </a>
                 </li>
 
@@ -61,7 +61,6 @@
                             <li><a href="{{ route('reports.index') }}" class="tp-link">Reports</a></li>
                             <li><a href="{{ route('settings.edit') }}" class="tp-link">Settings</a></li>
                             <li><a href="{{ route('backups.index') }}" class="tp-link">Backups</a></li>
-                            <li><a href="{{ route('admin.profile') }}" class="tp-link">Profile</a></li>
                         </ul>
                     </div>
                 </li>

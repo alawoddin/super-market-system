@@ -29,10 +29,7 @@ class BackupController extends Controller
         try {
             $filename = $this->backups->create();
         } catch (\Throwable $e) {
-            return back()->with('backup_status', [
-                'type' => 'error',
-                'text' => 'Backup failed: '.$e->getMessage(),
-            ]);
+            return back()->with(['message' => 'Backup failed: '.$e->getMessage(), 'alert-type' => 'error']);
         }
 
         // Hosted sites: also download immediately so admin keeps a local copy.
@@ -44,10 +41,7 @@ class BackupController extends Controller
             ]);
         }
 
-        return back()->with('backup_status', [
-            'type' => 'success',
-            'text' => 'Backup created: '.$filename,
-        ]);
+        return back()->with(['message' => 'Backup created: '.$filename, 'alert-type' => 'success']);
     }
 
     public function download(string $file)
@@ -68,16 +62,10 @@ class BackupController extends Controller
             $this->backups->restore($request->file);
             Artisan::call('optimize:clear');
         } catch (\Throwable $e) {
-            return back()->with('backup_status', [
-                'type' => 'error',
-                'text' => 'Restore failed: '.$e->getMessage(),
-            ]);
+            return back()->with(['message' => 'Restore failed: '.$e->getMessage(), 'alert-type' => 'error']);
         }
 
-        return back()->with('backup_status', [
-            'type' => 'success',
-            'text' => 'Database restored successfully from '.$request->file,
-        ]);
+        return back()->with(['message' => 'Database restored successfully from '.$request->file, 'alert-type' => 'success']);
     }
 
     public function destroy(Request $request)
@@ -87,15 +75,9 @@ class BackupController extends Controller
         try {
             $this->backups->delete($request->file);
         } catch (\Throwable $e) {
-            return back()->with('backup_status', [
-                'type' => 'error',
-                'text' => 'Delete failed: '.$e->getMessage(),
-            ]);
+            return back()->with(['message' => 'Delete failed: '.$e->getMessage(), 'alert-type' => 'error']);
         }
 
-        return back()->with('backup_status', [
-            'type' => 'success',
-            'text' => 'Backup deleted.',
-        ]);
+        return back()->with(['message' => 'Backup deleted.', 'alert-type' => 'success']);
     }
 }

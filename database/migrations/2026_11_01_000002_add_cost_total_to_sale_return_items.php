@@ -15,12 +15,15 @@ return new class extends Migration
         });
 
         // Fill in returns made before this column existed
-        DB::table('sale_return_items')
-            ->join('sale_returns', 'sale_returns.id', '=', 'sale_return_items.sale_return_id')
-            ->join('sale_items', 'sale_items.id', '=', 'sale_return_items.sale_item_id')
-            ->where('sale_returns.restock', true)
-            ->where('sale_items.quantity', '>', 0)
-            ->update(['sale_return_items.cost_total' => DB::raw('ROUND(sale_items.cost_total / sale_items.quantity * sale_return_items.quantity, 2)')]);
+        DB::statement('
+            UPDATE sale_return_items
+            SET cost_total = COALESCE((
+                SELECT ROUND(sale_items.cost_total / sale_items.quantity * sale_return_items.quantity, 2)
+                FROM sale_items
+                WHERE sale_items.id = sale_return_items.sale_item_id AND sale_items.quantity > 0
+            ), 0)
+            WHERE sale_return_id IN (SELECT id FROM sale_returns WHERE restock = 1)
+        ');
     }
 
     public function down(): void

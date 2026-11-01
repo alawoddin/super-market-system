@@ -20,7 +20,7 @@
 </div>
 <form method="POST" action="{{ route('cash-register.close') }}" class="row g-2 mt-3">@csrf
 <div class="col-md-8"><input name="notes" class="form-control" placeholder="Notes"></div>
-<div class="col-md-4"><button class="btn btn-danger w-100" onclick="return confirm('Close the register for today?')">Close Register</button></div>
+<div class="col-md-4"><button class="btn btn-danger w-100" data-confirm="Close the register for today?" data-confirm-button="Yes, close">Close Register</button></div>
 </form>
 </div></div>
 @else

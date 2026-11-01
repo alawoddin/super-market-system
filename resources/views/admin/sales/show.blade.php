@@ -8,7 +8,7 @@
 <a href="{{ route('sales.receipt',$sale) }}" target="_blank" class="btn btn-sm btn-outline-dark">Print Receipt</a>
 <a href="{{ route('sale-returns.create',['sale_id'=>$sale->id]) }}" class="btn btn-sm btn-outline-warning">Return</a>
 @if($sale->status==='completed')
-<form method="POST" action="{{ route('sales.cancel',$sale) }}" onsubmit="return confirm('Cancel this sale and restore stock?')">@csrf
+<form method="POST" action="{{ route('sales.cancel',$sale) }}" data-confirm="Cancel this sale and put the items back in stock?" data-confirm-button="Yes, cancel sale">@csrf
 <button class="btn btn-sm btn-outline-danger">Cancel Sale</button></form>
 @endif
 </div></div>

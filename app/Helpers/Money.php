@@ -17,16 +17,6 @@ class Money
         return str_contains($value, '.') ? rtrim(rtrim($value, '0'), '.') : $value;
     }
 
-    public static function currency(): string
-    {
-        return config('supermarket.currency', 'AFN');
-    }
-
-    public static function round(float|int|string|null $amount): string
-    {
-        return number_format((float) $amount, config('supermarket.money_precision', 2), '.', '');
-    }
-
     public static function qty(float|int|string|null $qty): string
     {
         $precision = config('supermarket.quantity_precision', 3);

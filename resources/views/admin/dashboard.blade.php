@@ -9,12 +9,7 @@
         <div>
             <div class="small text-uppercase mb-2" style="letter-spacing:.12em;opacity:.75">Welcome back</div>
             <h1>{{ Auth::user()->name }}, ready for today?</h1>
-            <p>See today’s numbers and all-time totals in one place — then jump into selling or adding products.</p>
-            <div class="mk-hero-actions">
-                <a href="{{ route('pos.index') }}" class="btn btn-light">Open POS</a>
-                <a href="{{ route('products.create') }}" class="btn btn-outline-light">Add product</a>
-                <a href="{{ route('cash-register.index') }}" class="btn btn-outline-light">Cash register</a>
-            </div>
+            <p>See today’s numbers and all-time totals in one place.</p>
         </div>
         <div class="text-end d-none d-lg-block" style="opacity:.9">
             <div class="small text-uppercase" style="letter-spacing:.1em">Currency</div>
@@ -24,7 +19,7 @@
 </div>
 
 <div class="row g-3 mb-3 mk-quick">
-    <div class="col-md-4">
+    <div class="col-md-6 col-xl-3">
         <a href="{{ route('pos.index') }}">
             <span class="icon"><i data-feather="shopping-cart"></i></span>
             <span>
@@ -33,7 +28,7 @@
             </span>
         </a>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6 col-xl-3">
         <a href="{{ route('products.create') }}">
             <span class="icon"><i data-feather="plus-circle"></i></span>
             <span>
@@ -42,7 +37,16 @@
             </span>
         </a>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6 col-xl-3">
+        <a href="{{ route('cash-register.index') }}">
+            <span class="icon"><i data-feather="briefcase"></i></span>
+            <span>
+                <strong class="d-block">Cash register</strong>
+                <small class="text-muted">Open or close the day</small>
+            </span>
+        </a>
+    </div>
+    <div class="col-md-6 col-xl-3">
         <a href="{{ route('reports.index') }}">
             <span class="icon"><i data-feather="bar-chart-2"></i></span>
             <span>

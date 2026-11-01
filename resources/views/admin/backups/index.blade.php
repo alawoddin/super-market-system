@@ -15,14 +15,6 @@
     </form>
 </div>
 
-@if(session('backup_status'))
-    <div class="card mb-3 border-{{ session('backup_status.type') === 'success' ? 'success' : 'danger' }}">
-        <div class="card-body py-3 {{ session('backup_status.type') === 'success' ? 'text-success' : 'text-danger' }}">
-            {{ session('backup_status.text') }}
-        </div>
-    </div>
-@endif
-
 <div class="card mb-3">
     <div class="card-body">
         <h6 class="mb-2">How backup works on hosting</h6>
@@ -55,12 +47,12 @@
             <td>{{ date('Y-m-d H:i', $f->getMTime()) }}</td>
             <td class="text-end text-nowrap">
                 <a href="{{ route('backups.download', $f->getFilename()) }}" class="btn btn-sm btn-outline-secondary">Download</a>
-                <form method="POST" action="{{ route('backups.restore') }}" class="d-inline" onsubmit="return confirm('Restore this backup? Current data will be overwritten.')">
+                <form method="POST" action="{{ route('backups.restore') }}" class="d-inline" data-confirm="Restore this backup? All current data will be replaced." data-confirm-button="Yes, restore">
                     @csrf
                     <input type="hidden" name="file" value="{{ $f->getFilename() }}">
                     <button class="btn btn-sm btn-outline-danger" type="submit">Restore</button>
                 </form>
-                <form method="POST" action="{{ route('backups.destroy') }}" class="d-inline" onsubmit="return confirm('Delete this backup file?')">
+                <form method="POST" action="{{ route('backups.destroy') }}" class="d-inline" data-confirm="Delete this backup file?" data-confirm-button="Yes, delete">
                     @csrf
                     <input type="hidden" name="file" value="{{ $f->getFilename() }}">
                     <button class="btn btn-sm btn-outline-dark" type="submit">Delete</button>

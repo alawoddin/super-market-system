@@ -13,7 +13,7 @@
 @foreach($expenses as $e)
 <tr><td>{{ $e->expense_date->format('Y-m-d') }}</td><td>{{ $e->title }}</td><td>{{ money($e->amount) }}</td><td>Cash</td>
 <td><a href="{{ route('expenses.edit',$e) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-<form action="{{ route('expenses.destroy',$e) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
+<form action="{{ route('expenses.destroy',$e) }}" method="POST" class="d-inline" data-confirm="Delete this expense?" data-confirm-button="Yes, delete">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger">Delete</button></form></td></tr>
 @endforeach
 </tbody></table>{{ $expenses->links() }}
 </div></div></div></div>

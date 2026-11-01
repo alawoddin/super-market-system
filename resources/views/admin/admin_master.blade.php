@@ -11,11 +11,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,550;9..144,700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ asset('backend/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
     <link href="{{ asset('backend/assets/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <link href="{{ asset('backend/assets/libs/toastr/toastr.min.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('css/market-theme.css') }}" rel="stylesheet" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('backend/assets/libs/chartjs/chart.umd.min.js') }}"></script>
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     @stack('styles')
-    @livewireStyles
 </head>
 <body data-menu-color="dark" data-sidebar="default" class="mk-app">
 <div id="app-layout">
@@ -34,7 +34,9 @@
 <script src="{{ asset('backend/assets/libs/node-waves/waves.min.js') }}"></script>
 <script src="{{ asset('backend/assets/libs/feather-icons/feather.min.js') }}"></script>
 <script src="{{ asset('backend/assets/js/app.js') }}"></script>
-@livewireScripts
+<script src="{{ asset('backend/assets/libs/toastr/toastr.min.js') }}"></script>
+<script src="{{ asset('backend/assets/libs/sweetalert2/sweetalert2.all.min.js') }}"></script>
+@include('admin.body.alerts')
 @stack('scripts')
 </body>
 </html>

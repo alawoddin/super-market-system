@@ -34,8 +34,8 @@ test('users can not authenticate with invalid password', function () {
 test('users can logout', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = $this->actingAs($user)->post('/admin/logout');
 
     $this->assertGuest();
-    $response->assertRedirect('/');
+    $response->assertRedirect('/login');
 });
