@@ -17,7 +17,7 @@ class DashboardController extends Controller
         $monthly = $reports->monthlySalesChart(12);
 
         $recentSales = Sale::query()->with('user')->latest('sale_date')->limit(8)->get();
-        $recentExpenses = Expense::query()->with('category')->latest('expense_date')->limit(8)->get();
+        $recentExpenses = Expense::query()->latest('expense_date')->limit(8)->get();
         $lowStock = Product::query()->lowStock()->orderBy('stock_quantity')->limit(8)->get();
         $expiring = StockBatch::query()
             ->with('product')

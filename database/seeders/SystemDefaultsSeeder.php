@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\ExpenseCategory;
 use App\Models\Setting;
 use Illuminate\Database\Seeder;
 
@@ -14,9 +13,5 @@ class SystemDefaultsSeeder extends Seeder
     public function run(): void
     {
         Setting::current();
-
-        foreach (['Rent', 'Electricity', 'Water', 'Internet', 'Salaries', 'Transportation', 'Maintenance', 'Other'] as $name) {
-            ExpenseCategory::query()->firstOrCreate(['name' => $name], ['is_active' => true]);
-        }
     }
 }

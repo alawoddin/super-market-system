@@ -56,8 +56,8 @@ return [
     | Payments (Afghanistan — cash only)
     |--------------------------------------------------------------------------
     |
-    | Card and online payments are not supported. Credit sales are allowed
-    | (customer pays later in cash). All amounts are AFN.
+    | Card and online payments are not supported. Every sale is paid in
+    | full in cash. All amounts are AFN.
     |
     */
     'payment_method' => 'cash',

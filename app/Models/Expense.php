@@ -11,7 +11,7 @@ class Expense extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'expense_category_id', 'user_id', 'title', 'amount',
+        'user_id', 'title', 'amount',
         'expense_date', 'payment_method', 'description',
     ];
 
@@ -23,6 +23,5 @@ class Expense extends Model
         ];
     }
 
-    public function category(): BelongsTo { return $this->belongsTo(ExpenseCategory::class, 'expense_category_id'); }
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
 }

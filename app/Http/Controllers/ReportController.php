@@ -47,7 +47,6 @@ class ReportController extends Controller
     public function expenses(Request $request)
     {
         $rows = Expense::query()
-            ->with('category')
             ->when($request->from, fn ($q, $d) => $q->whereDate('expense_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('expense_date', '<=', $d))
             ->latest('expense_date')

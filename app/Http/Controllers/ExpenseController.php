@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Expense;
-use App\Models\ExpenseCategory;
 use App\Services\CashRegisterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,30 +12,23 @@ class ExpenseController extends Controller
     public function index(Request $request)
     {
         $expenses = Expense::query()
-            ->with('category')
             ->when($request->from, fn ($q, $d) => $q->whereDate('expense_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('expense_date', '<=', $d))
-            ->when($request->category_id, fn ($q, $id) => $q->where('expense_category_id', $id))
             ->latest('expense_date')
             ->paginate(20)
             ->withQueryString();
 
-        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
-
-        return view('admin.expenses.index', compact('expenses', 'categories'));
+        return view('admin.expenses.index', compact('expenses'));
     }
 
     public function create()
     {
-        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
-
-        return view('admin.expenses.create', compact('categories'));
+        return view('admin.expenses.create');
     }
 
     public function store(Request $request, CashRegisterService $cash)
     {
         $data = $request->validate([
-            'expense_category_id' => ['required', 'exists:expense_categories,id'],
             'title' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'expense_date' => ['required', 'date'],
@@ -53,15 +45,12 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense)
     {
-        $categories = ExpenseCategory::query()->where('is_active', true)->orderBy('name')->get();
-
-        return view('admin.expenses.edit', compact('expense', 'categories'));
+        return view('admin.expenses.edit', compact('expense'));
     }
 
     public function update(Request $request, Expense $expense)
     {
         $data = $request->validate([
-            'expense_category_id' => ['required', 'exists:expense_categories,id'],
             'title' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'expense_date' => ['required', 'date'],

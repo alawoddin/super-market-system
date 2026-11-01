@@ -5,7 +5,6 @@
 <div class="card"><div class="card-body">
 <form method="POST" action="{{ route('expenses.update',$expense) }}">@csrf @method('PUT')
 <div class="mb-3"><label class="form-label">Title</label><input name="title" class="form-control" value="{{ $expense->title }}" required></div>
-<div class="mb-3"><label class="form-label">Category</label><select name="expense_category_id" class="form-select" required>@foreach($categories as $c)<option value="{{ $c->id }}" @selected($expense->expense_category_id==$c->id)>{{ $c->name }}</option>@endforeach</select></div>
 <div class="mb-3"><label class="form-label">Amount</label><input type="number" step="0.01" name="amount" class="form-control" value="{{ $expense->amount }}" required></div>
 <div class="mb-3"><label class="form-label">Date</label><input type="date" name="expense_date" class="form-control" value="{{ $expense->expense_date->format('Y-m-d') }}" required></div>
 <input type="hidden" name="payment_method" value="cash">

@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_number')->unique();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->dateTime('sale_date');
             $table->decimal('subtotal', 15, 2)->default(0);
@@ -28,7 +27,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['sale_date', 'customer_id']);
+            $table->index('sale_date');
             $table->index('payment_status');
             $table->index('status');
         });
@@ -58,7 +57,6 @@ return new class extends Migration
         Schema::create('sale_payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sale_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('payment_number')->unique();
             $table->date('payment_date');
@@ -66,8 +64,6 @@ return new class extends Migration
             $table->string('payment_method', 20)->default('cash');
             $table->text('notes')->nullable();
             $table->timestamps();
-
-            $table->index(['customer_id', 'payment_date']);
         });
     }
 
