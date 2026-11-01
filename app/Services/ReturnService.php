@@ -71,6 +71,10 @@ class ReturnService
                     'quantity' => $row['qty'],
                     'unit_price' => round($row['unitNet'], 2),
                     'subtotal' => $row['line'],
+                    // Restocked items take their cost back out of COGS; damaged items stay a loss
+                    'cost_total' => $return->restock && (float) $saleItem->quantity > 0
+                        ? round((float) $saleItem->cost_total / (float) $saleItem->quantity * $row['qty'], 2)
+                        : 0,
                 ]);
 
                 $saleItem->returned_quantity = (float) $saleItem->returned_quantity + $row['qty'];

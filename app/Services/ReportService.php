@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleReturn;
+use App\Models\SaleReturnItem;
 use App\Models\StockBatch;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,19 +17,25 @@ class ReportService
     {
         [$from, $to] = $this->range($from, $to);
 
-        $sales = Sale::query()
-            ->where('status', 'completed')
-            ->whereBetween('sale_date', [$from, $to]);
+        $sales = $this->soldSales()->whereBetween('sale_date', [$from, $to]);
+        $returns = $this->returnTotals($from, $to);
+
+        $grossRevenue = (float) (clone $sales)->sum('grand_total');
+        $grossCogs = (float) (clone $sales)->sum('cogs');
+        $revenue = $grossRevenue - $returns['refunds'];
+        $cogs = $grossCogs - $returns['cost_back'];
 
         return [
             'from' => $from,
             'to' => $to,
             'count' => (clone $sales)->count(),
-            'revenue' => (float) (clone $sales)->sum('grand_total'),
-            'cash_received' => (float) (clone $sales)->sum('amount_paid'),
-            'cogs' => (float) (clone $sales)->sum('cogs'),
+            'gross_revenue' => $grossRevenue,
+            'returns' => $returns['refunds'],
+            'revenue' => round($revenue, 2),
+            'cash_received' => round((float) (clone $sales)->sum('amount_paid') - $returns['refunds'], 2),
+            'cogs' => round($cogs, 2),
             'discounts' => (float) (clone $sales)->sum('discount'),
-            'profit' => (float) (clone $sales)->sum(DB::raw('grand_total - cogs')),
+            'profit' => round($revenue - $cogs, 2),
         ];
     }
 
@@ -51,10 +59,15 @@ class ReportService
     {
         $start = now()->subDays($days - 1)->startOfDay();
 
-        $rows = Sale::query()
+        $rows = $this->soldSales()
             ->selectRaw('DATE(sale_date) as day, SUM(grand_total) as total')
-            ->where('status', 'completed')
             ->where('sale_date', '>=', $start)
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $refunds = SaleReturn::query()
+            ->selectRaw('DATE(return_date) as day, SUM(refund_amount) as total')
+            ->where('return_date', '>=', $start)
             ->groupBy('day')
             ->pluck('total', 'day');
 
@@ -63,7 +76,7 @@ class ReportService
         for ($i = 0; $i < $days; $i++) {
             $day = $start->copy()->addDays($i)->toDateString();
             $labels[] = $day;
-            $data[] = (float) ($rows[$day] ?? 0);
+            $data[] = round((float) ($rows[$day] ?? 0) - (float) ($refunds[$day] ?? 0), 2);
         }
 
         return compact('labels', 'data');
@@ -73,10 +86,15 @@ class ReportService
     {
         $start = now()->subMonths($months - 1)->startOfMonth();
 
-        $rows = Sale::query()
+        $rows = $this->soldSales()
             ->selectRaw("DATE_FORMAT(sale_date, '%Y-%m') as month, SUM(grand_total) as total")
-            ->where('status', 'completed')
             ->where('sale_date', '>=', $start)
+            ->groupBy('month')
+            ->pluck('total', 'month');
+
+        $refunds = SaleReturn::query()
+            ->selectRaw("DATE_FORMAT(return_date, '%Y-%m') as month, SUM(refund_amount) as total")
+            ->where('return_date', '>=', $start)
             ->groupBy('month')
             ->pluck('total', 'month');
 
@@ -85,7 +103,7 @@ class ReportService
         for ($i = 0; $i < $months; $i++) {
             $month = $start->copy()->addMonths($i)->format('Y-m');
             $labels[] = $month;
-            $data[] = (float) ($rows[$month] ?? 0);
+            $data[] = round((float) ($rows[$month] ?? 0) - (float) ($refunds[$month] ?? 0), 2);
         }
 
         return compact('labels', 'data');
@@ -102,7 +120,7 @@ class ReportService
     {
         $today = now()->toDateString();
 
-        $allSales = Sale::query()->where('status', 'completed');
+        $allSales = $this->soldSales();
         // Stock bought = value of stock added from the product form (sales returns excluded)
         $allPurchases = StockBatch::query()->where('batch_number', 'not like', 'RET-%');
         $allExpenses = Expense::query();
@@ -111,15 +129,20 @@ class ReportService
         $todayPurchases = (clone $allPurchases)->whereDate('created_at', $today);
         $todayExpenses = (clone $allExpenses)->whereDate('expense_date', $today);
 
-        $todaySalesTotal = (float) (clone $todaySales)->sum('grand_total');
+        $todayReturns = $this->returnTotals(now()->startOfDay(), now()->endOfDay());
+        $allReturns = $this->returnTotals();
+
+        $todaySalesTotal = (float) (clone $todaySales)->sum('grand_total') - $todayReturns['refunds'];
         $todayPurchasesTotal = (float) (clone $todayPurchases)->sum(DB::raw('quantity_received * purchase_price'));
         $todayExpensesTotal = (float) (clone $todayExpenses)->sum('amount');
-        $todayGrossProfit = (float) (clone $todaySales)->sum(DB::raw('grand_total - cogs'));
+        $todayGrossProfit = (float) (clone $todaySales)->sum(DB::raw('grand_total - cogs'))
+            - ($todayReturns['refunds'] - $todayReturns['cost_back']);
 
-        $totalSales = (float) (clone $allSales)->sum('grand_total');
+        $totalSales = (float) (clone $allSales)->sum('grand_total') - $allReturns['refunds'];
         $totalPurchases = (float) (clone $allPurchases)->sum(DB::raw('quantity_received * purchase_price'));
         $totalExpenses = (float) (clone $allExpenses)->sum('amount');
-        $totalGrossProfit = (float) (clone $allSales)->sum(DB::raw('grand_total - cogs'));
+        $totalGrossProfit = (float) (clone $allSales)->sum(DB::raw('grand_total - cogs'))
+            - ($allReturns['refunds'] - $allReturns['cost_back']);
 
         $expiringDays = (int) (\setting('expiration_alert_days') ?? 7);
 
@@ -147,6 +170,27 @@ class ReportService
                 ->whereNotNull('expiration_date')
                 ->whereDate('expiration_date', '<', now()->toDateString())
                 ->count(),
+        ];
+    }
+
+    /** Sales that count toward revenue. Fully returned sales stay in; their refunds are subtracted separately. */
+    private function soldSales()
+    {
+        return Sale::query()->whereIn('status', ['completed', 'returned']);
+    }
+
+    /**
+     * Money refunded and cost taken back out of COGS for returns in a period (all time when no dates).
+     *
+     * @return array{refunds: float, cost_back: float}
+     */
+    private function returnTotals(?Carbon $from = null, ?Carbon $to = null): array
+    {
+        $returns = SaleReturn::query()->when($from && $to, fn ($q) => $q->whereBetween('return_date', [$from, $to]));
+
+        return [
+            'refunds' => (float) (clone $returns)->sum('refund_amount'),
+            'cost_back' => (float) SaleReturnItem::query()->whereIn('sale_return_id', (clone $returns)->select('id'))->sum('cost_total'),
         ];
     }
 

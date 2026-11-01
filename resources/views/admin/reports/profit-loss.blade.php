@@ -8,9 +8,11 @@
 <div class="col-md-3"><input type="date" name="to" value="{{ request('to') }}" class="form-control"></div>
 <div class="col-md-2"><button class="btn btn-light">Filter</button></div></form>
 <div class="card"><div class="card-body">
-<table class="table"><tr><th>Sales Revenue</th><td class="text-end">{{ money($report['revenue']) }}</td></tr>
+<table class="table"><tr><th>Sales</th><td class="text-end">{{ money($report['gross_revenue']) }}</td></tr>
+<tr><th>Returns (refunded)</th><td class="text-end text-danger">− {{ money($report['returns']) }}</td></tr>
+<tr><th>Net Sales Revenue</th><td class="text-end">{{ money($report['revenue']) }}</td></tr>
 <tr><th>Discounts</th><td class="text-end">{{ money($report['discounts']) }}</td></tr>
-<tr><th>COGS (batch costs)</th><td class="text-end">{{ money($report['cogs']) }}</td></tr>
+<tr><th>COGS (cost of items kept by customers)</th><td class="text-end">{{ money($report['cogs']) }}</td></tr>
 <tr><th>Gross Profit</th><td class="text-end">{{ money($report['profit']) }}</td></tr>
 <tr><th>Expenses</th><td class="text-end">{{ money($report['expenses']) }}</td></tr>
 <tr class="table-success"><th>Net Profit</th><td class="text-end fw-bold">{{ money($report['net_profit']) }}</td></tr>

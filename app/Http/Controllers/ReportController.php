@@ -27,7 +27,7 @@ class ReportController extends Controller
         $summary = $this->reports->salesSummary($request->from, $request->to);
         $rows = Sale::query()
             ->with('user')
-            ->where('status', 'completed')
+            ->whereIn('status', ['completed', 'returned'])
             ->when($request->from, fn ($q, $d) => $q->whereDate('sale_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('sale_date', '<=', $d))
             ->latest('sale_date')
