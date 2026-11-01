@@ -15,9 +15,12 @@ class CashRegisterController extends Controller
     public function index()
     {
         $current = CashRegister::currentOpen();
+        $currentProfit = $current ? $this->service->summary($current)['net_profit'] : null;
         $history = CashRegister::query()->with('user')->latest()->paginate(20);
+        $profits = $history->getCollection()
+            ->mapWithKeys(fn (CashRegister $r) => [$r->id => $this->service->summary($r)['net_profit']]);
 
-        return view('admin.cash-register.index', compact('current', 'history'));
+        return view('admin.cash-register.index', compact('current', 'currentProfit', 'history', 'profits'));
     }
 
     public function open(Request $request)
@@ -48,7 +51,12 @@ class CashRegisterController extends Controller
             return back()->with(['message' => $e->getMessage(), 'alert-type' => 'error']);
         }
 
-        return redirect()->route('cash-register.show', $register)->with(['message' => 'Cash register closed. Here is the day summary.', 'alert-type' => 'success']);
+        $profit = $this->service->summary($register)['net_profit'];
+
+        return redirect()->route('cash-register.show', $register)->with([
+            'message' => 'Cash register closed with '.money($register->actual_closing_balance).'. Day profit: '.money($profit),
+            'alert-type' => 'success',
+        ]);
     }
 
     public function show(CashRegister $cashRegister)

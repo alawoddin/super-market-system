@@ -6,9 +6,15 @@ class Money
 {
     public static function format(float|int|string|null $amount): string
     {
+        return config('supermarket.currency_symbol', '؋').' '.self::number($amount);
+    }
+
+    /** 1210.00 -> "1,210", 12.50 -> "12.5" (no extra zeros). */
+    public static function number(float|int|string|null $amount): string
+    {
         $value = number_format((float) $amount, config('supermarket.money_precision', 2), '.', ',');
 
-        return config('supermarket.currency_symbol', '؋').' '.$value;
+        return str_contains($value, '.') ? rtrim(rtrim($value, '0'), '.') : $value;
     }
 
     public static function currency(): string

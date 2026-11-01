@@ -16,6 +16,13 @@ if (! function_exists('qty_format')) {
     }
 }
 
+if (! function_exists('amount')) {
+    function amount(float|int|string|null $amount): string
+    {
+        return Money::number($amount);
+    }
+}
+
 if (! function_exists('setting')) {
     function setting(?string $key = null, mixed $default = null): mixed
     {

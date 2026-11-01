@@ -45,7 +45,7 @@
                     <button type="button" class="pos-product" :disabled="p.stock <= 0" @click="addProduct(p)">
                         <div class="name" x-text="p.name"></div>
                         <div class="meta">
-                            <span class="price" x-text="Number(p.selling_price).toFixed(0) + ' AFN'"></span>
+                            <span class="price" x-text="fmt(p.selling_price) + ' AFN'"></span>
                             <span x-text="'Stock ' + p.stock"></span>
                         </div>
                     </button>
@@ -75,7 +75,7 @@
                             <tr>
                                 <td>
                                     <div class="fw-semibold" x-text="item.name"></div>
-                                    <small class="text-muted" x-text="Number(item.unit_price).toFixed(2) + ' AFN each'"></small>
+                                    <small class="text-muted" x-text="fmt(item.unit_price) + ' AFN each'"></small>
                                 </td>
                                 <td>
                                     <div class="pos-qty">
@@ -84,7 +84,7 @@
                                         <button type="button" @click="changeQty(index,1)">+</button>
                                     </div>
                                 </td>
-                                <td class="text-end fw-semibold" x-text="lineTotal(item).toFixed(2)"></td>
+                                <td class="text-end fw-semibold" x-text="fmt(lineTotal(item))"></td>
                                 <td class="text-end">
                                     <button type="button" class="btn btn-sm btn-outline-danger" @click="remove(index)">×</button>
                                 </td>
@@ -104,10 +104,10 @@
         <div class="card-body">
             <div class="pos-total-box">
                 <div class="lbl">Amount due</div>
-                <div class="amt" x-text="grandTotal.toFixed(2) + ' AFN'"></div>
+                <div class="amt" x-text="fmt(grandTotal) + ' AFN'"></div>
                 <div class="small mt-1" style="opacity:.8" x-text="cart.length + ' item(s) in cart'"></div>
                 <div class="small mt-1" style="opacity:.8" x-show="discount > 0"
-                     x-text="'Subtotal ' + subtotal.toFixed(2) + ' − Discount ' + Number(discount).toFixed(2)"></div>
+                     x-text="'Subtotal ' + fmt(subtotal) + ' − Discount ' + fmt(discount)"></div>
             </div>
 
             <div class="mb-3">
@@ -122,7 +122,7 @@
 
             <div class="pos-due-row">
                 <span x-text="amount_paid >= grandTotal ? 'Change' : 'Not enough cash'"></span>
-                <strong x-text="(Math.abs(amount_paid - grandTotal)).toFixed(2) + ' AFN'"></strong>
+                <strong x-text="fmt(Math.abs(amount_paid - grandTotal)) + ' AFN'"></strong>
             </div>
 
             <button class="btn pos-finish w-100" :disabled="busy || !cart.length" @click="checkout()">
@@ -152,6 +152,10 @@ function posApp() {
         busy: false,
         error: '',
         okMsg: '',
+        // 1210 -> "1,210", 12.5 -> "12.5" (no extra zeros)
+        fmt(n) {
+            return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        },
         get filteredQuick() {
             const q = (this.pickFilter || '').toLowerCase().trim();
             if (!q) return this.quickProducts;

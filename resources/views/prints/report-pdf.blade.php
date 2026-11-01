@@ -13,14 +13,14 @@
     <h2>Profit & Loss Report</h2>
     <p>Generated: {{ now()->format('Y-m-d H:i') }}</p>
     <table>
-        <tr><th>Sales</th><td>{{ number_format($report['gross_revenue'], 2) }} AFN</td></tr>
-        <tr><th>Returns</th><td>- {{ number_format($report['returns'], 2) }} AFN</td></tr>
-        <tr><th>Net Sales Revenue</th><td>{{ number_format($report['revenue'], 2) }} AFN</td></tr>
-        <tr><th>Discounts</th><td>{{ number_format($report['discounts'], 2) }} AFN</td></tr>
-        <tr><th>COGS</th><td>{{ number_format($report['cogs'], 2) }} AFN</td></tr>
-        <tr><th>Gross Profit</th><td>{{ number_format($report['profit'], 2) }} AFN</td></tr>
-        <tr><th>Expenses</th><td>{{ number_format($report['expenses'], 2) }} AFN</td></tr>
-        <tr><th>Net Profit</th><td><strong>{{ number_format($report['net_profit'], 2) }} AFN</strong></td></tr>
+        <tr><th>Sales</th><td>{{ amount($report['gross_revenue']) }} AFN</td></tr>
+        <tr><th>Returns</th><td>- {{ amount($report['returns']) }} AFN</td></tr>
+        <tr><th>Net Sales Revenue</th><td>{{ amount($report['revenue']) }} AFN</td></tr>
+        <tr><th>Discounts</th><td>{{ amount($report['discounts']) }} AFN</td></tr>
+        <tr><th>COGS</th><td>{{ amount($report['cogs']) }} AFN</td></tr>
+        <tr><th>Gross Profit</th><td>{{ amount($report['profit']) }} AFN</td></tr>
+        <tr><th>Expenses</th><td>{{ amount($report['expenses']) }} AFN</td></tr>
+        <tr><th>Net Profit</th><td><strong>{{ amount($report['net_profit']) }} AFN</strong></td></tr>
     </table>
 </body>
 </html>
