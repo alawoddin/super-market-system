@@ -7,13 +7,11 @@ Local supermarket management app for Afghanistan (AFN), built with Laravel 12, B
 - Single admin login (no Google / social auth)
 - Dashboard with live stats & Chart.js
 - Products (name, barcode, quantity, prices; Excel import/export)
-- Suppliers & customers with debt tracking
-- Purchases with batch inventory (FEFO / expiry)
 - POS with USB barcode scanner support
-- Cash-only payments (AFN) + credit sales (pay later in cash)
+- Cash-only payments (AFN)
 - No card / online payment options
 - Expenses & daily cash register
-- Reports (sales, P&L with real COGS, debts, inventory)
+- Reports (sales, P&L with real COGS, expenses, inventory)
 - Thermal receipt printing (58mm / 80mm)
 - Local database backup / restore
 
@@ -52,15 +50,13 @@ Change the password after first login (Profile).
 ## Daily workflow
 
 1. Open **Cash Register** with opening balance
-2. Create **Purchases** to stock products (with expiry dates)
+2. Add **Products** (name, barcode, quantity, purchase and selling price)
 3. Sell from **POS** (scan barcodes)
-4. Record customer/supplier payments as needed
-5. Close cash register at end of day
-6. Create a **Backup** regularly
+4. Close cash register at end of day
+5. Create a **Backup** regularly
 
 ## Notes
 
 - All money values are AFN
-- Credit sales require a registered customer
 - Stock never goes negative; expired batches cannot be sold
 - Profit uses batch purchase costs (COGS), not latest product price only

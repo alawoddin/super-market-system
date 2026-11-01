@@ -18,7 +18,7 @@
 <td>{{ money($p->stock_quantity * $p->purchase_price) }}</td>
 <td>
 <form method="POST" action="{{ route('inventory.adjust',$p) }}" class="d-flex gap-1">@csrf
-<input type="number" step="0.001" name="stock_quantity" class="form-control form-control-sm" style="width:90px" value="{{ $p->stock_quantity }}" required>
+<input type="number" step="0.001" name="stock_quantity" class="form-control form-control-sm" style="width:90px" value="{{ qty_format($p->stock_quantity) }}" required>
 <button class="btn btn-sm btn-outline-primary">Set</button>
 </form>
 </td></tr>
