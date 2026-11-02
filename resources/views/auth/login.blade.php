@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Login — Market OS</title>
+    <title>Login — Insaf Hyper</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="{{ asset('backend/assets/images/favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,10 +19,10 @@
             <div class="w-100 px-3 px-md-5 py-5">
                 <div class="mk-login-panel mx-auto" style="max-width: 420px">
                     <div class="d-flex align-items-center gap-2 mb-4">
-                        <span class="mk-brand-mark">M</span>
+                        <img src="{{ asset('images/brand/logo.png') }}" alt="Insaf Hyper" style="width:72px;height:72px">
                         <div>
-                            <div class="mk-display fw-semibold fs-4 mb-0">Market OS</div>
-                            <small class="text-muted">Supermarket management</small>
+                            <div class="mk-display fw-semibold fs-4 mb-0">Insaf Hyper</div>
+                            <small class="text-muted">Shopping made easy</small>
                         </div>
                     </div>
 

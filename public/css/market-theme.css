@@ -70,19 +70,13 @@ h1, h2, h3, h4, .mk-display {
     color: #fff !important;
 }
 
-.mk-brand-mark {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    background: linear-gradient(145deg, #c8f56a, #1a7a52);
-    display: grid;
-    place-items: center;
-    font-family: var(--mk-display);
-    font-weight: 700;
-    color: #0f3d2e;
-    font-size: 1.05rem;
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
+.mk-brand-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
+
 
 .mk-brand-text {
     line-height: 1.15;

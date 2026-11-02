@@ -47,6 +47,23 @@ Open http://127.0.0.1:8000
 
 Change the password after first login (Profile).
 
+## Install on a shop computer (one click to open)
+
+Needs: XAMPP (for PHP), MySQL running as a Windows service, Google Chrome (or Edge).
+
+1. Copy the whole project folder (including `vendor`) to the shop computer, e.g. `C:\MarketOS`.
+2. Double-click **Install Market OS.bat**. It creates the database, sets production mode,
+   and puts a **Market OS** shortcut on the desktop and in the Start menu.
+   Answer `y` if Market OS should open automatically when Windows starts.
+3. Double-click **Market OS** on the desktop. It starts MySQL (if needed) and the server
+   in the background and opens the app in its own window. Receipts print straight to the
+   default printer (no print dialog).
+4. **Stop Market OS.bat** stops the background server. Problems are logged in
+   `storage\logs\launcher.log`.
+
+Run **Install Market OS.bat** again after copying a newer version: it updates the database
+and keeps all data and the admin password.
+
 ## Daily workflow
 
 1. Open **Cash Register** with opening balance

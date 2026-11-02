@@ -3,10 +3,10 @@
         <div id="sidebar-menu">
             <div class="logo-box">
                 <a href="{{ route('dashboard') }}" class="mk-brand">
-                    <span class="mk-brand-mark">M</span>
+                    <img src="{{ asset('images/brand/logo.png') }}" alt="Insaf Hyper" class="mk-brand-logo">
                     <span class="mk-brand-text">
-                        <strong>Market OS</strong>
-                        <span>Supermarket desk</span>
+                        <strong>Insaf Hyper</strong>
+                        <span>Shopping made easy</span>
                     </span>
                 </a>
             </div>
