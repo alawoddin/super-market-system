@@ -125,10 +125,15 @@
                 <strong x-text="fmt(Math.abs(amount_paid - grandTotal)) + ' AFN'"></strong>
             </div>
 
-            <button class="btn pos-finish w-100" :disabled="busy || !cart.length" @click="checkout()">
-                <span x-show="!busy">Finish sale & print</span>
-                <span x-show="busy">Processing…</span>
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn pos-finish flex-grow-1" :disabled="busy || !cart.length" @click="checkout(true)">
+                    <span x-show="!busy">Save &amp; Print</span>
+                    <span x-show="busy">Processing…</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-lg" :disabled="busy || !cart.length" @click="checkout(false)">Save only</button>
+            </div>
+            {{-- Receipt is printed from this hidden frame, so the POS page stays open --}}
+            <iframe x-ref="receiptFrame" title="Receipt" style="position:fixed;right:0;bottom:0;width:0;height:0;border:0"></iframe>
         </div>
     </div>
 </div>
@@ -244,7 +249,7 @@ function posApp() {
             this.recalc();
             this.$refs.barcode.focus();
         },
-        async checkout() {
+        async checkout(print = true) {
             this.error = '';
             if (this.amount_paid + 0.001 < this.grandTotal) {
                 this.error = 'Cash received is less than the amount due.';
@@ -275,7 +280,10 @@ function posApp() {
                 this.clearCart();
                 this.okMsg = 'Sale done: ' + data.invoice_number;
                 toastr.success(this.okMsg);
-                window.open(data.print_url, '_blank');
+                if (print) {
+                    // The receipt page prints itself when it loads
+                    this.$refs.receiptFrame.src = data.print_url + '?t=' + Date.now();
+                }
             } catch (e) {
                 this.error = e.message;
             } finally {

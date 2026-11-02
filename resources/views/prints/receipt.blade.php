@@ -58,6 +58,12 @@
     </table>
     <div class="line"></div>
     <div class="center">{{ $settings->receipt_footer ?: 'Thank you for shopping with us!' }}</div>
-    <script>window.onload = () => setTimeout(() => window.print(), 300);</script>
+    <script>
+        window.onload = () => setTimeout(() => window.print(), 300);
+        // Printed from inside the POS: put the cursor back in the barcode box afterwards
+        window.addEventListener('afterprint', () => {
+            if (window.parent !== window) window.parent.document.querySelector('[x-ref="barcode"]')?.focus();
+        });
+    </script>
 </body>
 </html>
