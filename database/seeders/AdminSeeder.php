@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Hash;
 class AdminSeeder extends Seeder
 {
     /**
-     * Seed the single administrator account.
+     * Seed the single administrator account. Runs safely again: an existing admin keeps their password.
      */
     public function run(): void
     {
-        User::query()->updateOrCreate(
+        User::query()->firstOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Administrator',
