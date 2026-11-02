@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Setting extends Model
 {
     protected $fillable = [
-        'shop_name', 'logo', 'phone', 'address', 'currency',
+        'shop_name', 'logo', 'receipt_qr', 'phone', 'whatsapp', 'address', 'currency',
         'receipt_header', 'receipt_footer', 'low_stock_alert',
         'expiration_alert_days', 'receipt_width',
     ];
@@ -29,6 +29,7 @@ class Setting extends Model
             'low_stock_alert' => 5,
             'expiration_alert_days' => 7,
             'receipt_width' => '80mm',
+            'whatsapp' => '0747333670',
         ]);
     }
 }

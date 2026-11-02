@@ -22,6 +22,7 @@ class SettingController extends Controller
         $data = $request->validate([
             'shop_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'whatsapp' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string'],
             'currency' => ['required', 'string', 'max:10'],
             'receipt_header' => ['nullable', 'string'],
@@ -30,6 +31,7 @@ class SettingController extends Controller
             'expiration_alert_days' => ['required', 'integer', 'min:1'],
             'receipt_width' => ['required', 'in:58mm,80mm'],
             'logo' => ['nullable', 'image', 'max:2048'],
+            'receipt_qr' => ['nullable', 'image', 'max:2048'],
         ]);
 
         if ($request->hasFile('logo')) {
@@ -37,6 +39,13 @@ class SettingController extends Controller
                 Storage::disk('public')->delete($settings->logo);
             }
             $data['logo'] = $request->file('logo')->store('settings', 'public');
+        }
+
+        if ($request->hasFile('receipt_qr')) {
+            if ($settings->receipt_qr) {
+                Storage::disk('public')->delete($settings->receipt_qr);
+            }
+            $data['receipt_qr'] = $request->file('receipt_qr')->store('settings', 'public');
         }
 
         $settings->update($data);
