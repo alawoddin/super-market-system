@@ -59,8 +59,11 @@ function Find-Browser {
     return $null
 }
 
-# 1. MySQL
-if (-not (Test-Port 3306)) {
+# 1. MySQL (port from .env, 3306 if not set)
+$dbPort = 3306
+$envLine = Get-Content (Join-Path $root '.env') -ErrorAction SilentlyContinue | Where-Object { $_ -match '^DB_PORT=\d+' } | Select-Object -First 1
+if ($envLine) { $dbPort = [int]($envLine -replace '^DB_PORT=', '') }
+if (-not (Test-Port $dbPort)) {
     Write-Log 'MySQL not running, trying to start it'
     $service = Get-Service | Where-Object { $_.Name -match '^(MySQL|MariaDB)' } | Select-Object -First 1
     if ($service) {
@@ -68,7 +71,7 @@ if (-not (Test-Port 3306)) {
     } elseif (Test-Path 'C:\xampp\mysql\bin\mysqld.exe') {
         Start-Process 'C:\xampp\mysql\bin\mysqld.exe' -ArgumentList '--defaults-file=C:\xampp\mysql\bin\my.ini' -WindowStyle Hidden
     }
-    if (-not (Wait-Port 3306 30)) {
+    if (-not (Wait-Port $dbPort 30)) {
         Show-Error "MySQL is not running.`n`nOpen Windows Services, find MySQL, and press Start. Then open Market OS again."
     }
 }
