@@ -18,7 +18,9 @@
         <div class="col-xl-5 d-flex align-items-center">
             <div class="w-100 px-3 px-md-5 py-5">
                 <div class="mk-login-panel mx-auto" style="max-width: 420px">
-                    <img src="{{ asset('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" class="d-block mx-auto mb-4" style="width:100%;max-width:280px;height:auto">
+                    <div class="text-center mb-4">
+                        <x-brand-logo style="font-size:20px" />
+                    </div>
 
                     <h4 class="mb-1">Admin login</h4>
                     <p class="text-muted mb-4">Sign in to your dashboard</p>

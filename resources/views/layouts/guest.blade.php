@@ -19,7 +19,7 @@
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
             <div>
                 <a href="/">
-                    <img src="{{ asset('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" style="width:240px;height:auto">
+                    <x-brand-logo style="font-size:18px" />
                 </a>
             </div>
 

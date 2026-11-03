@@ -3,7 +3,7 @@
         <div id="sidebar-menu">
             <div class="logo-box">
                 <a href="{{ route('dashboard') }}" class="mk-brand">
-                    <img src="{{ asset('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" class="mk-brand-full">
+                    <x-brand-logo tone="light" />
                 </a>
             </div>
 

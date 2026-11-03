@@ -56,15 +56,28 @@ h1, h2, h3, h4, .mk-display {
     box-shadow: 8px 0 30px rgba(12, 40, 30, 0.18);
 }
 
+/* Taller logo bar so the full logo fits; the menu starts below it */
+.app-sidebar-menu {
+    padding-top: 96px !important;
+}
+
 #sidebar-menu .logo-box {
-    background: transparent !important;
+    height: 96px !important;
+    background: #0d3327 !important;
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    padding: 1.1rem 1rem !important;
+    padding: 12px 20px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
 }
 
 .mk-brand {
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
     gap: .75rem;
     text-decoration: none !important;
     color: #fff !important;
@@ -77,15 +90,6 @@ h1, h2, h3, h4, .mk-display {
     flex-shrink: 0;
 }
 
-/* Full Ghaznowyan logo (black art) sits on a white card so it shows on the dark sidebar */
-.mk-brand-full {
-    display: block;
-    width: 100%;
-    height: auto;
-    background: #fff;
-    border-radius: 12px;
-    padding: 6px 8px;
-}
 
 .mk-brand-text {
     line-height: 1.15;
