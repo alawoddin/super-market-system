@@ -64,20 +64,22 @@ Step 'Creating shortcuts'
 $shell = New-Object -ComObject WScript.Shell
 $target = Join-Path $env:WINDIR 'System32\wscript.exe'
 $vbs = Join-Path $PSScriptRoot 'Market OS.vbs'
-$icon = Join-Path $PSScriptRoot 'marketos.ico'
+$icon = Join-Path $PSScriptRoot 'ghaznowyan.ico'
 $places = @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))
-$autostart = Read-Host 'Open Market OS automatically when Windows starts? (y/n) [n]'
+$autostart = Read-Host 'Open Ghaznowyan Hyper automatically when Windows starts? (y/n) [n]'
 if ($autostart -match '^[yY]') { $places += [Environment]::GetFolderPath('Startup') }
 foreach ($folder in $places) {
-    $link = $shell.CreateShortcut((Join-Path $folder 'Market OS.lnk'))
+    # Older installs named the shortcut "Market OS"
+    Remove-Item (Join-Path $folder 'Market OS.lnk') -ErrorAction SilentlyContinue
+    $link = $shell.CreateShortcut((Join-Path $folder 'Ghaznowyan Hyper.lnk'))
     $link.TargetPath = $target
     $link.Arguments = "`"$vbs`""
     $link.WorkingDirectory = $root
     $link.IconLocation = $icon
-    $link.Description = 'Market OS supermarket system'
+    $link.Description = 'Ghaznowyan Hyper supermarket system'
     $link.Save()
     Write-Host "Shortcut: $folder"
 }
 
-Write-Host "`nDone! Double-click 'Market OS' on the desktop to start." -ForegroundColor Green
+Write-Host "`nDone! Double-click 'Ghaznowyan Hyper' on the desktop to start." -ForegroundColor Green
 Read-Host 'Press Enter to close'

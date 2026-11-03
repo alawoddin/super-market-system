@@ -23,7 +23,7 @@ class Setting extends Model
     public static function current(): self
     {
         return static::query()->firstOrCreate([], [
-            'shop_name' => 'My Supermarket',
+            'shop_name' => 'غزنویان هایپر',
             'currency' => 'AFN',
             'receipt_footer' => 'Thank you for shopping with us!',
             'low_stock_alert' => 5,
