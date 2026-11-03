@@ -18,13 +18,7 @@
         <div class="col-xl-5 d-flex align-items-center">
             <div class="w-100 px-3 px-md-5 py-5">
                 <div class="mk-login-panel mx-auto" style="max-width: 420px">
-                    <div class="d-flex align-items-center gap-2 mb-4">
-                        <img src="{{ asset('images/brand/logo.png') }}" alt="Ghaznowyan Hyper" style="width:72px;height:72px">
-                        <div>
-                            <div class="mk-display fw-semibold fs-4 mb-0">غزنویان هایپر</div>
-                            <small class="text-muted">Ghaznowyan Hyper · Better Life</small>
-                        </div>
-                    </div>
+                    <img src="{{ asset('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" class="d-block mx-auto mb-4" style="width:100%;max-width:280px;height:auto">
 
                     <h4 class="mb-1">Admin login</h4>
                     <p class="text-muted mb-4">Sign in to your dashboard</p>

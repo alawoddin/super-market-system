@@ -10,6 +10,8 @@
     </style>
 </head>
 <body>
+    {{-- dompdf reads the image from disk, not over HTTP --}}
+    <img src="{{ public_path('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" style="width:180px">
     <h2>Profit & Loss Report</h2>
     <p>Generated: {{ now()->format('Y-m-d H:i') }}</p>
     <table>

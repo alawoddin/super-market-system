@@ -77,6 +77,15 @@ h1, h2, h3, h4, .mk-display {
     flex-shrink: 0;
 }
 
+/* Full Ghaznowyan logo (black art) sits on a white card so it shows on the dark sidebar */
+.mk-brand-full {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 6px 8px;
+}
 
 .mk-brand-text {
     line-height: 1.15;

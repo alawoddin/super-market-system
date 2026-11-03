@@ -3,11 +3,7 @@
         <div id="sidebar-menu">
             <div class="logo-box">
                 <a href="{{ route('dashboard') }}" class="mk-brand">
-                    <img src="{{ asset('images/brand/logo.png') }}" alt="Ghaznowyan Hyper" class="mk-brand-logo">
-                    <span class="mk-brand-text">
-                        <strong>غزنویان هایپر</strong>
-                        <span>Ghaznowyan Hyper · Better Life</span>
-                    </span>
+                    <img src="{{ asset('images/receipt/logo.png') }}" alt="Ghaznowyan Hyper" class="mk-brand-full">
                 </a>
             </div>
 
