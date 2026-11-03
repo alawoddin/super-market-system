@@ -18,6 +18,7 @@
         .center { text-align: center; }
         .ltr { direction: ltr; unicode-bidi: embed; }
         .logo { width: 100%; height: auto; display: block; margin: 0 auto 4px; }
+        .shop-name { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
         .invoice-no { font-size: 15px; letter-spacing: 1px; margin-top: 2px; }
         .barcode { display: block; margin: 2px auto; max-width: 100%; height: 34px; }
         .datetime { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
@@ -46,6 +47,7 @@
     </div>
 
     <img src="{{ $logo }}" alt="{{ $settings->shop_name }}" class="logo">
+    <div class="center shop-name">غزنویان هایپر</div>
     @if($settings->address)<div class="center">{{ $settings->address }}</div>@endif
     @if($settings->phone)<div class="center">تلفن: <span class="ltr">{{ $settings->phone }}</span></div>@endif
     @if($settings->receipt_header)<div class="center">{{ $settings->receipt_header }}</div>@endif
