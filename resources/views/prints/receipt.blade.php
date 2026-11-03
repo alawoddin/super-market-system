@@ -7,7 +7,7 @@
         $width = $settings->receipt_width === '58mm' ? '58mm' : '80mm';
         $logo = $settings->logo ? asset('storage/'.$settings->logo) : asset('images/receipt/logo.png');
         $qr = $settings->receipt_qr ? asset('storage/'.$settings->receipt_qr) : asset('images/receipt/website-qr.png');
-        $website = 'www.ghaznowyanhyper.af';
+        $website = 'ghaznowyanhyper.khedmat.website';
         $units = ['piece' => 'pcs'];
         $paymentMethods = ['cash' => 'نقد', 'card' => 'کارت', 'credit' => 'قرض'];
     @endphp
@@ -18,7 +18,12 @@
         .center { text-align: center; }
         .ltr { direction: ltr; unicode-bidi: embed; }
         .logo { width: 100%; height: auto; display: block; margin: 0 auto 4px; }
-        .shop-name { font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+        .brand { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px; }
+        .brand-cart { width: {{ $width === '58mm' ? '14mm' : '20mm' }}; height: auto; flex-shrink: 0; }
+        .brand-text { text-align: center; line-height: 1.2; }
+        .brand-fa { font-size: {{ $width === '58mm' ? '20px' : '26px' }}; font-weight: 900; }
+        .brand-en { font-family: Arial, sans-serif; font-size: {{ $width === '58mm' ? '13px' : '17px' }}; font-weight: 900; direction: ltr; }
+        .brand-slogan { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: {{ $width === '58mm' ? '14px' : '18px' }}; font-weight: normal; direction: ltr; }
         .invoice-no { font-size: 15px; letter-spacing: 1px; margin-top: 2px; }
         .barcode { display: block; margin: 2px auto; max-width: 100%; height: 34px; }
         .datetime { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
@@ -46,8 +51,24 @@
         <a href="{{ route('sales.show', $sale) }}">Back</a>
     </div>
 
-    <img src="{{ $logo }}" alt="{{ $settings->shop_name }}" class="logo">
-    <div class="center shop-name">غزنویان هایپر</div>
+    @if($settings->logo)
+        <img src="{{ $logo }}" alt="{{ $settings->shop_name }}" class="logo">
+    @else
+        {{-- Logo drawn in code so its text can be edited here --}}
+        <div class="brand">
+            <div class="brand-text">
+                <div class="brand-fa">غزنویان هاپیر</div>
+                <div class="brand-en">Ghaznowyan Hyper</div>
+                <div class="brand-slogan">Better Life</div>
+            </div>
+            <svg class="brand-cart" viewBox="0 0 64 56" fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M2 4h9l9 32h32l8-24H14"/>
+                <path d="M17 21h40M20 29h35M28 12l3 24M40 12l-1 24M50 12l-4 24"/>
+                <circle cx="24" cy="47" r="5" fill="#000"/>
+                <circle cx="48" cy="47" r="5" fill="#000"/>
+            </svg>
+        </div>
+    @endif
     @if($settings->address)<div class="center">{{ $settings->address }}</div>@endif
     @if($settings->phone)<div class="center">تلفن: <span class="ltr">{{ $settings->phone }}</span></div>@endif
     @if($settings->receipt_header)<div class="center">{{ $settings->receipt_header }}</div>@endif
