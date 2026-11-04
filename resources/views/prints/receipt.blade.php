@@ -5,42 +5,52 @@
     <title>Receipt {{ $sale->invoice_number }}</title>
     @php
         $width = $settings->receipt_width === '58mm' ? '58mm' : '80mm';
+        // Thermal printers can't print to the paper edge: 80mm paper prints ~72mm, 58mm prints ~48mm
+        $printable = $width === '58mm' ? '48mm' : '72mm';
+        $small = $width === '58mm';
         $logo = $settings->logo ? asset('storage/'.$settings->logo) : asset('images/receipt/logo.png');
-        $qr = $settings->receipt_qr ? asset('storage/'.$settings->receipt_qr) : asset('images/receipt/website-qr.png');
-        $website = 'ghaznowyanhyper.khedmat.website';
+        $qr = $settings->receipt_qr ? asset('storage/'.$settings->receipt_qr) : asset('images/receipt/whatsapp-qr.png');
         $units = ['piece' => 'pcs'];
         $paymentMethods = ['cash' => 'نقد', 'card' => 'کارت', 'credit' => 'قرض'];
     @endphp
     <style>
-        @page { margin: 3mm; }
+        @page { margin: 0; }
         * { box-sizing: border-box; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        body { font-family: Tahoma, "Segoe UI", Arial, sans-serif; font-size: 13px; font-weight: bold; width: {{ $width }}; margin: 0 auto; background: #fff; direction: rtl; }
+        html, body { margin: 0; padding: 0; background: #fff; }
+        /* Never wider than what the printer can print, so nothing gets cut off at the edge */
+        body { font-family: Tahoma, "Segoe UI", Arial, sans-serif; font-size: {{ $small ? '11px' : '12px' }}; font-weight: bold; width: 100%; max-width: {{ $printable }}; margin: 0 auto; padding: 1mm; direction: rtl; overflow-wrap: anywhere; }
         .center { text-align: center; }
         .ltr { direction: ltr; unicode-bidi: embed; }
-        .logo { width: 100%; height: auto; display: block; margin: 0 auto 4px; }
-        .brand { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px; }
-        .brand-cart { width: {{ $width === '58mm' ? '14mm' : '20mm' }}; height: auto; flex-shrink: 0; }
-        .brand-text { text-align: center; line-height: 1.2; }
-        .brand-fa { font-size: {{ $width === '58mm' ? '20px' : '26px' }}; font-weight: 900; }
-        .brand-en { font-family: Arial, sans-serif; font-size: {{ $width === '58mm' ? '13px' : '17px' }}; font-weight: 900; direction: ltr; }
-        .brand-slogan { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: {{ $width === '58mm' ? '14px' : '18px' }}; font-weight: normal; direction: ltr; }
-        .invoice-no { font-size: 15px; letter-spacing: 1px; margin-top: 2px; }
-        .barcode { display: block; margin: 2px auto; max-width: 100%; height: 34px; }
-        .datetime { display: flex; justify-content: space-between; align-items: center; margin: 4px 0; }
+        .logo { max-width: 100%; height: auto; display: block; margin: 0 auto 4px; }
+        .brand { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px; }
+        .brand-cart { width: {{ $small ? '10mm' : '14mm' }}; height: auto; flex-shrink: 0; }
+        .brand-text { text-align: center; line-height: 1.2; min-width: 0; }
+        .brand-fa { font-size: {{ $small ? '17px' : '22px' }}; font-weight: 900; }
+        .brand-en { font-family: Arial, sans-serif; font-size: {{ $small ? '11px' : '14px' }}; font-weight: 900; direction: ltr; }
+        .brand-slogan { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: {{ $small ? '12px' : '15px' }}; font-weight: normal; direction: ltr; }
+        .invoice-no { font-size: {{ $small ? '12px' : '14px' }}; margin-top: 2px; }
+        .barcode { display: block; margin: 2px auto; width: 100%; height: 34px; }
+        .datetime { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin: 4px 0; }
         .datetime .labels { line-height: 1.5; }
-        .datetime .value { font-size: 15px; }
-        table.items { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        table.items th, table.items td { border: 1.5px solid #000; padding: 3px; text-align: center; vertical-align: middle; }
-        table.items td.name { text-align: right; }
+        .datetime .value { font-size: {{ $small ? '12px' : '14px' }}; white-space: nowrap; }
+        /* Fixed columns: a long product name wraps instead of pushing the table off the paper */
+        table.items { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 6px; }
+        table.items th, table.items td { border: 1px solid #000; padding: 2px 1px; text-align: center; vertical-align: middle; }
+        table.items th { font-size: {{ $small ? '9px' : '11px' }}; padding: 2px 0; overflow-wrap: normal; }
+        table.items td.name { text-align: right; padding-right: 3px; }
+        table.items .col-qty { width: 15%; }
+        table.items .col-price { width: 22%; }
+        table.items .col-total { width: 24%; }
         .totals { width: 100%; border-collapse: collapse; margin-top: 6px; }
         .totals td { padding: 3px 0; }
-        .totals td:last-child { text-align: left; direction: ltr; }
-        .totals .big td { font-size: 20px; font-weight: 900; }
-        .totals .rule td { border-bottom: 1.5px solid #000; }
-        .qrbox { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
-        .qrbox .txt { flex: 1; border: 1.5px solid #000; border-radius: 10px; padding: 6px 4px; text-align: center; line-height: 1.6; }
-        .qrbox .site { direction: ltr; font-size: {{ $width === '58mm' ? '10px' : '12px' }}; }
-        .qrbox img { width: {{ $width === '58mm' ? '18mm' : '22mm' }}; height: auto; }
+        .totals td:last-child { text-align: left; direction: ltr; white-space: nowrap; }
+        .totals .big td { font-size: {{ $small ? '14px' : '17px' }}; font-weight: 900; }
+        .totals .rule td { border-bottom: 1px solid #000; }
+        .qrbox { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+        .qrbox .txt { flex: 1; min-width: 0; border: 1px solid #000; border-radius: 8px; padding: 4px 3px; text-align: center; line-height: 1.5; }
+        .qrbox .phone { direction: ltr; font-size: {{ $small ? '13px' : '16px' }}; font-weight: 900; letter-spacing: .5px; white-space: nowrap; }
+        /* Big enough for a phone to scan through the WhatsApp icon in the middle */
+        .qrbox img { width: {{ $small ? '18mm' : '22mm' }}; height: auto; flex-shrink: 0; }
         .footer { margin-top: 6px; }
         @media print { .no-print { display: none; } }
     </style>
@@ -83,7 +93,7 @@
 
     <table class="items">
         <thead>
-            <tr><th>نام کالا</th><th>تعداد</th><th>قیمت</th><th>مجموعه</th></tr>
+            <tr><th>نام کالا</th><th class="col-qty">تعداد</th><th class="col-price">قیمت</th><th class="col-total">مجموعه</th></tr>
         </thead>
         <tbody>
         @foreach($sale->items as $item)
@@ -108,10 +118,10 @@
 
     <div class="qrbox">
         <div class="txt">
-            <div>لینک سفارش آنلاین</div>
-            <div class="site">{{ $website }}</div>
+            <div>سفارش از طریق واتساپ</div>
+            <div class="phone">{{ $settings->whatsapp ?: '0747333670' }}</div>
         </div>
-        <img src="{{ $qr }}" alt="QR">
+        <img src="{{ $qr }}" alt="WhatsApp QR">
     </div>
 
     @if($settings->receipt_footer)<div class="center footer" dir="auto">{{ $settings->receipt_footer }}</div>@endif
