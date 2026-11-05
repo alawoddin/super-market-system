@@ -132,7 +132,17 @@ class ProductController extends Controller
 
         try {
             DB::transaction(function () use ($product, $data, $quantity) {
+                $oldPurchasePrice = (float) $product->purchase_price;
                 $product->update($data);
+
+                // Sales take their cost from the stock batches, so a corrected buy price
+                // must reach the stock still on the shelf or profit stays wrong
+                if (abs($oldPurchasePrice - (float) $product->purchase_price) > 0.0001) {
+                    $product->stockBatches()
+                        ->where('quantity_remaining', '>', 0)
+                        ->update(['purchase_price' => $product->purchase_price]);
+                }
+
                 $this->inventory->adjust($product, $quantity, 'Changed from product form');
             });
         } catch (\Throwable $e) {

@@ -22,12 +22,7 @@
         .center { text-align: center; }
         .ltr { direction: ltr; unicode-bidi: embed; }
         .logo { max-width: 100%; height: auto; display: block; margin: 0 auto 4px; }
-        .brand { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 4px; }
-        .brand-cart { width: {{ $small ? '10mm' : '14mm' }}; height: auto; flex-shrink: 0; }
-        .brand-text { text-align: center; line-height: 1.2; min-width: 0; }
-        .brand-fa { font-size: {{ $small ? '17px' : '22px' }}; font-weight: 900; }
-        .brand-en { font-family: Arial, sans-serif; font-size: {{ $small ? '11px' : '14px' }}; font-weight: 900; direction: ltr; }
-        .brand-slogan { font-family: "Brush Script MT", "Segoe Script", cursive; font-size: {{ $small ? '12px' : '15px' }}; font-weight: normal; direction: ltr; }
+        .brand { text-align: center; margin-bottom: 4px; }
         .invoice-no { font-size: {{ $small ? '12px' : '14px' }}; margin-top: 2px; }
         .barcode { display: block; margin: 2px auto; width: 100%; height: 34px; }
         .datetime { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin: 4px 0; }
@@ -64,19 +59,9 @@
     @if($settings->logo)
         <img src="{{ $logo }}" alt="{{ $settings->shop_name }}" class="logo">
     @else
-        {{-- Logo drawn in code so its text can be edited here --}}
+        {{-- Same logo as the dashboard sidebar (resources/views/components/brand-logo.blade.php), printed in black --}}
         <div class="brand">
-            <div class="brand-text">
-                <div class="brand-fa">غزنویان هاپیر</div>
-                <div class="brand-en">Ghaznowyan Hyper</div>
-                <div class="brand-slogan">Better Life</div>
-            </div>
-            <svg class="brand-cart" viewBox="0 0 64 56" fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
-                <path d="M2 4h9l9 32h32l8-24H14"/>
-                <path d="M17 21h40M20 29h35M28 12l3 24M40 12l-1 24M50 12l-4 24"/>
-                <circle cx="24" cy="47" r="5" fill="#000"/>
-                <circle cx="48" cy="47" r="5" fill="#000"/>
-            </svg>
+            <x-brand-logo dir="ltr" style="font-size:{{ $small ? '13px' : '18px' }}" />
         </div>
     @endif
     @if($settings->address)<div class="center">{{ $settings->address }}</div>@endif
