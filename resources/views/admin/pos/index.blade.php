@@ -116,12 +116,35 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label fw-semibold">Cash received</label>
+                <label class="form-label fw-semibold">Customer</label>
+                <select class="form-select form-select-lg" x-model="customer_id">
+                    <option value="">Walk-in (cash)</option>
+                    @foreach($customers as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }}@if($c->phone) — {{ $c->phone }}@endif</option>
+                    @endforeach
+                </select>
+                <small class="text-muted">Needed only for credit / partial pay</small>
+            </div>
+
+            <label class="form-label fw-semibold">Payment</label>
+            <div class="pos-pay-type">
+                <button type="button"
+                        class="btn"
+                        :class="sale_type === 'cash' ? 'btn-success' : 'btn-outline-success'"
+                        @click="setSaleType('cash')">Cash</button>
+                <button type="button"
+                        class="btn"
+                        :class="sale_type === 'credit' ? 'btn-warning' : 'btn-outline-warning'"
+                        @click="setSaleType('credit')">Credit</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold" x-text="sale_type === 'credit' ? 'Cash paid now (can be 0)' : 'Cash received'"></label>
                 <input type="number" class="form-control form-control-lg" x-model.number="amount_paid" min="0" step="1">
             </div>
 
             <div class="pos-due-row">
-                <span x-text="amount_paid >= grandTotal ? 'Change' : 'Not enough cash'"></span>
+                <span x-text="amount_paid >= grandTotal ? 'Change' : 'Still owing'"></span>
                 <strong x-text="fmt(Math.abs(amount_paid - grandTotal)) + ' AFN'"></strong>
             </div>
 
@@ -150,6 +173,8 @@ function posApp() {
         pickFilter: '',
         quickProducts: @json($quickProducts),
         cart: [],
+        customer_id: '',
+        sale_type: 'cash',
         discount: 0,
         amount_paid: 0,
         subtotal: 0,
@@ -181,7 +206,12 @@ function posApp() {
             if (this.discount < 0) this.discount = 0;
             if (this.discount > this.subtotal) this.discount = this.subtotal;
             this.grandTotal = Math.max(0, this.subtotal - (this.discount || 0));
-            this.amount_paid = this.grandTotal;
+            if (this.sale_type === 'cash') this.amount_paid = this.grandTotal;
+        },
+        setSaleType(type) {
+            this.sale_type = type;
+            this.amount_paid = type === 'cash' ? this.grandTotal : 0;
+            this.$refs.barcode?.focus();
         },
         async scan() {
             this.error = '';
@@ -244,6 +274,8 @@ function posApp() {
             this.cart = [];
             this.discount = 0;
             this.amount_paid = 0;
+            this.customer_id = '';
+            this.sale_type = 'cash';
             this.okMsg = '';
             this.error = '';
             this.recalc();
@@ -251,8 +283,12 @@ function posApp() {
         },
         async checkout(print = true) {
             this.error = '';
-            if (this.amount_paid + 0.001 < this.grandTotal) {
-                this.error = 'Cash received is less than the amount due.';
+            if (this.sale_type === 'credit' && !this.customer_id) {
+                this.error = 'For credit sale, choose a customer.';
+                return;
+            }
+            if (this.amount_paid + 0.001 < this.grandTotal && !this.customer_id) {
+                this.error = 'Not enough cash. Choose a customer to put the rest on credit.';
                 return;
             }
             this.busy = true;
@@ -265,6 +301,7 @@ function posApp() {
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
+                        customer_id: this.customer_id || null,
                         discount: this.discount || 0,
                         amount_paid: this.amount_paid || 0,
                         items: this.cart.map(i => ({

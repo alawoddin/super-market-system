@@ -3,6 +3,8 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CashRegisterController;
+use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\InventoryController;
@@ -43,6 +45,15 @@ Route::middleware('auth')->group(function () {
     Route::get('sales/{sale}/receipt', [SaleController::class, 'receipt'])->name('sales.receipt');
     Route::resource('sales', SaleController::class)->only(['index', 'show', 'create', 'store']);
 
+    Route::get('customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
+    Route::get('customers-datatable', [CustomerController::class, 'datatable'])->name('customers.datatable');
+    Route::resource('customers', CustomerController::class);
+
+    Route::get('customer-payments', [CustomerPaymentController::class, 'index'])->name('customer-payments.index');
+    Route::get('customer-payments/create', [CustomerPaymentController::class, 'create'])->name('customer-payments.create');
+    Route::post('customer-payments', [CustomerPaymentController::class, 'store'])->name('customer-payments.store');
+    Route::get('customer-payments/{customerPayment}/receipt', [CustomerPaymentController::class, 'receipt'])->name('customer-payments.receipt');
+
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::get('inventory/batches', [InventoryController::class, 'batches'])->name('inventory.batches');
     Route::get('inventory/movements', [InventoryController::class, 'movements'])->name('inventory.movements');
@@ -60,6 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
     Route::get('reports/profit-loss', [ReportController::class, 'profitLoss'])->name('reports.profit-loss');
+    Route::get('reports/debts', [ReportController::class, 'debts'])->name('reports.debts');
     Route::get('reports/expenses', [ReportController::class, 'expenses'])->name('reports.expenses');
     Route::get('reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
     Route::get('reports/cash-register', [ReportController::class, 'cashRegister'])->name('reports.cash-register');

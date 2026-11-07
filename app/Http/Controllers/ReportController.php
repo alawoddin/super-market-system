@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
@@ -26,7 +27,7 @@ class ReportController extends Controller
     {
         $summary = $this->reports->salesSummary($request->from, $request->to);
         $rows = Sale::query()
-            ->with('user')
+            ->with(['customer', 'user'])
             ->whereIn('status', ['completed', 'returned'])
             ->when($request->from, fn ($q, $d) => $q->whereDate('sale_date', '>=', $d))
             ->when($request->to, fn ($q, $d) => $q->whereDate('sale_date', '<=', $d))
@@ -69,6 +70,18 @@ class ReportController extends Controller
         $expired = StockBatch::query()->where('quantity_remaining', '>', 0)->whereNotNull('expiration_date')->whereDate('expiration_date', '<', now())->count();
 
         return view('admin.reports.inventory', compact('value', 'products', 'lowStock', 'expired'));
+    }
+
+    public function debts()
+    {
+        $customers = Customer::all()->map(fn (Customer $c) => [
+            'id' => $c->id,
+            'name' => $c->name,
+            'phone' => $c->phone,
+            'balance' => $c->outstandingBalance(),
+        ])->filter(fn ($c) => $c['balance'] > 0)->sortByDesc('balance')->values();
+
+        return view('admin.reports.debts', compact('customers'));
     }
 
     public function cashRegister()

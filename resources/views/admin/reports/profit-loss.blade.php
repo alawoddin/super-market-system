@@ -16,6 +16,7 @@
 <tr><th>Gross Profit</th><td class="text-end">{{ money($report['profit']) }}</td></tr>
 <tr><th>Expenses</th><td class="text-end">{{ money($report['expenses']) }}</td></tr>
 <tr class="table-success"><th>Net Profit</th><td class="text-end fw-bold">{{ money($report['net_profit']) }}</td></tr>
+<tr><th>Still owed by customers (credit)</th><td class="text-end">{{ money($report['receivables']) }}</td></tr>
 <tr><th>Cash Received</th><td class="text-end">{{ money($report['cash_received']) }}</td></tr>
 </table>
 </div></div></div></div>

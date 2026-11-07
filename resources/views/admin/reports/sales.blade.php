@@ -12,12 +12,13 @@
 <div class="col-md-3"><div class="card card-body">Returns<br><strong class="text-danger">− {{ money($summary['returns']) }}</strong></div></div>
 <div class="col-md-3"><div class="card card-body">Net Revenue<br><strong>{{ money($summary['revenue']) }}</strong></div></div>
 <div class="col-md-3"><div class="card card-body">Cash Received<br><strong>{{ money($summary['cash_received']) }}</strong></div></div>
+<div class="col-md-3"><div class="card card-body">Still owed (credit)<br><strong class="text-danger">{{ money($summary['receivables']) }}</strong></div></div>
 <div class="col-md-3"><div class="card card-body">Profit<br><strong>{{ money($summary['profit']) }}</strong></div></div>
 </div>
 <div class="card"><div class="card-body">
-<table class="table table-sm"><thead><tr><th>Invoice</th><th>Cashier</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody>
+<table class="table table-sm"><thead><tr><th>Invoice</th><th>Customer</th><th>Cashier</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody>
 @foreach($rows as $s)
-<tr><td>{{ $s->invoice_number }}</td><td>{{ $s->user?->name }}</td><td>{{ $s->sale_date->format('Y-m-d') }}</td>
+<tr><td>{{ $s->invoice_number }}</td><td>{{ $s->customer?->name ?? 'Walk-in' }}</td><td>{{ $s->user?->name }}</td><td>{{ $s->sale_date->format('Y-m-d') }}</td>
 <td>{{ money($s->grand_total) }}</td><td>@if($s->status === 'returned')<span class="badge bg-warning text-dark">Returned</span>@elseif($s->returns()->exists())<span class="badge bg-light text-dark">Part returned</span>@endif</td></tr>
 @endforeach
 </tbody></table>{{ $rows->links() }}

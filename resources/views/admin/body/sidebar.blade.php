@@ -32,6 +32,18 @@
                     </a>
                 </li>
 
+                <li class="menu-title mt-2">Customers</li>
+                <li>
+                    <a href="{{ route('customers.index') }}" class="tp-link">
+                        <i data-feather="users"></i><span> Customers </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('customer-payments.create') }}" class="tp-link">
+                        <i data-feather="dollar-sign"></i><span> Take Debt Payment </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Products</li>
                 <li>
                     <a href="{{ route('products.create') }}" class="tp-link">

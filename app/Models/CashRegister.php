@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CashRegister extends Model
 {
     protected $fillable = [
-        'user_id', 'opened_at', 'closed_at', 'opening_balance', 'cash_sales',
+        'user_id', 'opened_at', 'closed_at', 'opening_balance', 'cash_sales', 'customer_debt_payments',
         'cash_expenses', 'cash_refunds',
         'expected_closing_balance', 'actual_closing_balance', 'cash_difference', 'status', 'notes',
     ];
@@ -20,6 +20,7 @@ class CashRegister extends Model
             'closed_at' => 'datetime',
             'opening_balance' => 'decimal:2',
             'cash_sales' => 'decimal:2',
+            'customer_debt_payments' => 'decimal:2',
             'cash_expenses' => 'decimal:2',
             'cash_refunds' => 'decimal:2',
             'expected_closing_balance' => 'decimal:2',
@@ -34,6 +35,7 @@ class CashRegister extends Model
     {
         $expected = (float) $this->opening_balance
             + (float) $this->cash_sales
+            + (float) $this->customer_debt_payments
             - (float) $this->cash_expenses
             - (float) $this->cash_refunds;
 

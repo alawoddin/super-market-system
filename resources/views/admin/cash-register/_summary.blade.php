@@ -8,7 +8,7 @@
     <div class="col-md-4"><div class="card h-100"><div class="card-body">
         <div class="small text-muted">Closed with</div>
         <div class="fs-4 fw-semibold">{{ money($register->actual_closing_balance ?? $register->expected_closing_balance) }}</div>
-        <div class="small text-muted">{{ $register->closed_at?->format('Y-m-d H:i') ?? 'Still open' }} · start + sales − expenses − refunds</div>
+        <div class="small text-muted">{{ $register->closed_at?->format('Y-m-d H:i') ?? 'Still open' }} · start + sales + debt payments − expenses − refunds</div>
     </div></div></div>
     <div class="col-md-4"><div class="card h-100"><div class="card-body">
         <div class="small text-muted">Net profit</div>
@@ -26,6 +26,7 @@
             <tr><td>Returns (refunded)</td><td class="text-end text-danger">− {{ money($summary['refunds']) }}</td></tr>
             <tr><td>Cost of products sold</td><td class="text-end text-danger">− {{ money($summary['cogs']) }}</td></tr>
             <tr class="fw-semibold"><td>Profit from sales</td><td class="text-end">{{ money($summary['gross_profit']) }}</td></tr>
+            <tr><td class="text-muted">Debt payments taken (cash)</td><td class="text-end text-muted">{{ money($register->customer_debt_payments) }}</td></tr>
             <tr><td>Expenses</td><td class="text-end text-danger">− {{ money($summary['expenses_total']) }}</td></tr>
             <tr class="table-success fw-bold"><td>Net profit</td><td class="text-end {{ $summary['net_profit'] < 0 ? 'text-danger' : '' }}">{{ money($summary['net_profit']) }}</td></tr>
         </table>

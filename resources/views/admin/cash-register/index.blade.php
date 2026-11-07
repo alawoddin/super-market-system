@@ -10,6 +10,7 @@
 <div class="row g-2">
 <div class="col-md-2">Opening: {{ money($current->opening_balance) }}</div>
 <div class="col-md-2">Cash Sales: {{ money($current->cash_sales) }}</div>
+<div class="col-md-2">Debt Payments: {{ money($current->customer_debt_payments) }}</div>
 <div class="col-md-2">Expenses: {{ money($current->cash_expenses) }}</div>
 <div class="col-md-2">Refunds: {{ money($current->cash_refunds) }}</div>
 <div class="col-md-4">Closing amount: <strong>{{ money($current->expected_closing_balance) }}</strong></div>

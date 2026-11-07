@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Customer;
 use App\Models\Expense;
 use App\Models\Product;
 use App\Models\Sale;
@@ -35,6 +36,7 @@ class ReportService
             'cash_received' => round((float) (clone $sales)->sum('amount_paid') - $returns['refunds'], 2),
             'cogs' => round($cogs, 2),
             'discounts' => (float) (clone $sales)->sum('discount'),
+            'receivables' => (float) (clone $sales)->sum('remaining_balance'),
             'profit' => round($revenue - $cogs, 2),
         ];
     }
@@ -156,6 +158,9 @@ class ReportService
             'total_expenses' => $totalExpenses,
             'month_expenses' => (float) (clone $allExpenses)->whereBetween('expense_date', [now()->startOfMonth()->toDateString(), $today])->sum('amount'),
             'total_profit' => $totalGrossProfit - $totalExpenses,
+            'customer_debts' => (float) Sale::query()->where('status', 'completed')->sum('remaining_balance')
+                + (float) Customer::sum('opening_balance'),
+            'customers' => Customer::count(),
             'products' => Product::count(),
             'stock_value' => $this->inventoryValuation(),
             'low_stock' => Product::lowStock()->count(),

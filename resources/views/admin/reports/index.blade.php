@@ -7,6 +7,7 @@
 @foreach([
 ['Sales Report','reports.sales','daily/weekly/monthly sales'],
 ['Profit & Loss','reports.profit-loss','COGS-based profit'],
+['Debt Report','reports.debts','money customers still owe'],
 ['Expense Report','reports.expenses','expense breakdown'],
 ['Inventory Report','reports.inventory','stock valuation'],
 ['Cash Register','reports.cash-register','register history'],

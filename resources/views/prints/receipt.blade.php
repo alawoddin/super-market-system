@@ -75,6 +75,7 @@
         <div class="labels">تاریخ:<br>وقت:</div>
         <div class="value ltr">{{ $sale->sale_date->format('d.m.Y') }}&nbsp;&nbsp;&nbsp;{{ $sale->sale_date->format('H:i') }}</div>
     </div>
+    @if($sale->customer)<div>مشتری: {{ $sale->customer->name }}</div>@endif
 
     <table class="items">
         <thead>
@@ -98,6 +99,9 @@
         <tr class="big rule"><td>مجموعه نهایی:</td><td>{{ amount($sale->grand_total) }}AFN</td></tr>
         <tr class="rule"><td>پول نقد:</td><td>{{ amount((float) $sale->amount_paid + (float) $sale->change_amount) }} AFN</td></tr>
         <tr class="rule"><td>باقی مانده:</td><td>{{ amount($sale->change_amount) }} AFN</td></tr>
+        @if($sale->remaining_balance > 0)
+            <tr class="rule"><td>قرض:</td><td>{{ amount($sale->remaining_balance) }} AFN</td></tr>
+        @endif
         <tr class="rule"><td>پرداخت:</td><td>{{ $paymentMethods[$sale->payment_method] ?? $sale->payment_method }}</td></tr>
     </table>
 

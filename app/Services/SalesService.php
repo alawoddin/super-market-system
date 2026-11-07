@@ -60,27 +60,31 @@ class SalesService
             }
             $grandTotal = max(0, $subtotal - $overallDiscount);
             $amountPaid = (float) ($data['amount_paid'] ?? 0);
+            $customerId = $data['customer_id'] ?? null;
 
-            // Cash only: the full total must be paid at the counter.
-            if ($amountPaid + 0.001 < $grandTotal) {
-                throw new RuntimeException('Amount paid is less than the total.');
+            // Paying less than the total is a credit sale: the rest becomes the customer's debt,
+            // paid later in cash from the customer's page.
+            if ($amountPaid + 0.001 < $grandTotal && ! $customerId) {
+                throw new RuntimeException('Choose a customer to sell on credit (pay later).');
             }
 
-            $change = round($amountPaid - $grandTotal, 2);
-            $appliedPaid = $grandTotal;
+            $appliedPaid = round(min($amountPaid, $grandTotal), 2);
+            $change = round(max(0, $amountPaid - $grandTotal), 2);
+            $remaining = round($grandTotal - $appliedPaid, 2);
 
             $sale = Sale::query()->create([
                 'invoice_number' => $this->nextInvoiceNumber(),
+                'customer_id' => $customerId,
                 'user_id' => Auth::id(),
                 'sale_date' => now(),
                 'subtotal' => round($subtotal, 2),
                 'discount' => $overallDiscount,
                 'grand_total' => round($grandTotal, 2),
                 'amount_paid' => $appliedPaid,
-                'remaining_balance' => 0,
+                'remaining_balance' => $remaining,
                 'change_amount' => $change,
-                'payment_status' => 'paid',
-                'payment_method' => 'cash',
+                'payment_status' => $this->statusFromAmounts($grandTotal, $appliedPaid),
+                'payment_method' => $remaining > 0 ? 'credit' : 'cash',
                 'status' => 'completed',
                 'cogs' => 0,
                 'notes' => $data['notes'] ?? null,
@@ -121,6 +125,7 @@ class SalesService
             if ($appliedPaid > 0) {
                 SalePayment::query()->create([
                     'sale_id' => $sale->id,
+                    'customer_id' => $sale->customer_id,
                     'user_id' => Auth::id(),
                     'payment_number' => $this->nextPaymentNumber(),
                     'payment_date' => now()->toDateString(),
@@ -132,7 +137,7 @@ class SalesService
                 app(CashRegisterService::class)->addCashSale($appliedPaid);
             }
 
-            return $sale->load(['items.product', 'payments', 'user']);
+            return $sale->load(['items.product', 'customer', 'payments', 'user']);
         });
     }
 
@@ -167,6 +172,56 @@ class SalesService
         });
     }
 
+    /** Debt payment from a customer: pays off their oldest unpaid sales first. */
+    public function recordCustomerPayment(array $data): SalePayment
+    {
+        return DB::transaction(function () use ($data) {
+            $amount = (float) $data['amount'];
+            if ($amount <= 0) {
+                throw new RuntimeException('Invalid payment amount.');
+            }
+
+            $payment = SalePayment::query()->create([
+                'sale_id' => $data['sale_id'] ?? null,
+                'customer_id' => $data['customer_id'],
+                'user_id' => Auth::id(),
+                'payment_number' => $this->nextPaymentNumber(),
+                'payment_date' => $data['payment_date'] ?? now()->toDateString(),
+                'amount' => round($amount, 2),
+                'payment_method' => 'cash',
+                'notes' => $data['notes'] ?? null,
+            ]);
+
+            $remainingToApply = $amount;
+
+            $sales = Sale::query()
+                ->where('customer_id', $data['customer_id'])
+                ->where('status', 'completed')
+                ->where('remaining_balance', '>', 0)
+                ->when(! empty($data['sale_id']), fn ($q) => $q->where('id', $data['sale_id']))
+                ->orderBy('sale_date')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($sales as $sale) {
+                if ($remainingToApply <= 0) {
+                    break;
+                }
+
+                $apply = min((float) $sale->remaining_balance, $remainingToApply);
+                $sale->amount_paid = round((float) $sale->amount_paid + $apply, 2);
+                $sale->remaining_balance = round((float) $sale->grand_total - (float) $sale->amount_paid, 2);
+                $sale->payment_status = $this->statusFromAmounts((float) $sale->grand_total, (float) $sale->amount_paid);
+                $sale->save();
+                $remainingToApply -= $apply;
+            }
+
+            app(CashRegisterService::class)->addCustomerDebtPayment($amount);
+
+            return $payment;
+        });
+    }
+
     public function nextInvoiceNumber(): string
     {
         $prefix = 'INV-'.now()->format('Ymd').'-';
@@ -189,5 +244,18 @@ class SalesService
         $seq = $last ? ((int) substr($last, -4)) + 1 : 1;
 
         return $prefix.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    private function statusFromAmounts(float $total, float $paid): string
+    {
+        if ($paid <= 0) {
+            return 'unpaid';
+        }
+
+        if ($paid + 0.001 >= $total) {
+            return 'paid';
+        }
+
+        return 'partial';
     }
 }

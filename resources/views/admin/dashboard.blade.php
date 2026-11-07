@@ -135,6 +135,8 @@
 ['Stock Value', money($stats['stock_value']), 'var(--mk-sky)'],
 ['Low Stock', $stats['low_stock'], 'var(--mk-coral)'],
 ['Products', $stats['products'], 'var(--mk-leaf)'],
+['Customer Debts', money($stats['customer_debts']), 'var(--mk-coral)'],
+['Customers', $stats['customers'], 'var(--mk-pine)'],
 ]; @endphp
 @foreach($cards as $i => [$label,$value,$color])
 <div class="col-md-6 col-xl-4">

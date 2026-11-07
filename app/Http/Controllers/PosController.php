@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Services\SalesService;
@@ -15,6 +16,7 @@ class PosController extends Controller
 
     public function index()
     {
+        $customers = Customer::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'phone']);
         $settings = Setting::current();
 
         // Quick-pick buttons for products without using a barcode scanner
@@ -32,7 +34,7 @@ class PosController extends Controller
             ])
             ->values();
 
-        return view('admin.pos.index', compact('settings', 'quickProducts'));
+        return view('admin.pos.index', compact('customers', 'settings', 'quickProducts'));
     }
 
     public function lookup(Request $request)
@@ -100,6 +102,7 @@ class PosController extends Controller
     public function checkout(Request $request)
     {
         $data = $request->validate([
+            'customer_id' => ['nullable', 'exists:customers,id'],
             'discount' => ['nullable', 'numeric', 'min:0'],
             'amount_paid' => ['required', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string'],

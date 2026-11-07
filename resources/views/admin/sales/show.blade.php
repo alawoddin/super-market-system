@@ -13,6 +13,7 @@
 @endif
 </div></div>
 <div class="card"><div class="card-body">
+<p><strong>Customer:</strong> @if($sale->customer)<a href="{{ route('customers.show', $sale->customer) }}">{{ $sale->customer->name }}</a>@else Walk-in @endif</p>
 <p><strong>Cashier:</strong> {{ $sale->user?->name }}</p>
 <p><strong>Date:</strong> {{ $sale->sale_date->format('Y-m-d H:i') }}</p>
 <table class="table"><thead><tr><th>Product</th><th>Qty</th><th>Price</th><th>Disc</th><th>Subtotal</th></tr></thead><tbody>
@@ -25,6 +26,9 @@
 <div>Discount: {{ money($sale->discount) }}</div>
 <div class="fs-5 fw-bold">Grand Total: {{ money($sale->grand_total) }}</div>
 <div>Paid: {{ money($sale->amount_paid) }} | Due: {{ money($sale->remaining_balance) }} | Change: {{ money($sale->change_amount) }}</div>
+@if($sale->customer && $sale->remaining_balance > 0 && $sale->status === 'completed')
+<a href="{{ route('customer-payments.create', ['customer_id' => $sale->customer_id]) }}" class="btn btn-sm btn-success my-1">Take debt payment</a>
+@endif
 <div>COGS: {{ money($sale->cogs) }} | Profit: {{ money($sale->profit) }}</div>
 </div>
 </div></div></div></div>
